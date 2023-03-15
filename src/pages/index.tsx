@@ -1,11 +1,46 @@
-import Head from 'next/head'
-import Image from 'next/image'
-import { Inter } from '@next/font/google'
-import styles from '@/styles/Home.module.css'
+import Head from "next/head";
+import Image from "next/image";
+import { Inter } from "@next/font/google";
+import styles from "@/styles/Home.module.css";
+import type { InvokeArgs } from "@tauri-apps/api/tauri";
 
-const inter = Inter({ subsets: ['latin'] })
+const isNode = (): boolean =>
+  Object.prototype.toString.call(
+    typeof process !== "undefined" ? process : 0
+  ) === "[object process]";
+
+export async function invoke<T>(
+  cmd: string,
+  args?: InvokeArgs | undefined
+): Promise<T> {
+  if (isNode()) {
+    // This shouldn't ever happen when React fully loads
+    return Promise.resolve(undefined as unknown as T);
+  }
+  const tauriAppsApi = await import("@tauri-apps/api");
+  const tauriInvoke = tauriAppsApi.invoke;
+  return tauriInvoke(cmd, args);
+}
+
+const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
+  const clickHandler = () => {
+    const isClient = typeof window !== "undefined";
+    isClient &&
+      invoke("create_product", {
+        request: {
+          name: "sample1",
+          code: "code1",
+          unit: "個",
+          default_price: 2000,
+          standard_stock_quantity: 10,
+        },
+      }).then(() => console.log("Completed!"));
+
+    invoke("search_product").then((res) => console.log(res));
+  };
+
   return (
     <>
       <Head>
@@ -26,7 +61,7 @@ export default function Home() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              By{' '}
+              By{" "}
               <Image
                 src="/vercel.svg"
                 alt="Vercel Logo"
@@ -117,7 +152,10 @@ export default function Home() {
             </p>
           </a>
         </div>
+        <div>
+          <button onClick={clickHandler}>test</button>
+        </div>
       </main>
     </>
-  )
+  );
 }
