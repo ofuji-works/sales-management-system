@@ -91,7 +91,7 @@ pub struct Product {
     standard_stock_quantity: StandardStockQuantity,
     created_at: PrimitiveDateTime,
     updated_at: PrimitiveDateTime,
-    deleted_at: PrimitiveDateTime,
+    deleted_at: Option<PrimitiveDateTime>,
 }
 impl Product {
     pub fn new(
@@ -103,7 +103,7 @@ impl Product {
         standard_stock_quantity: StandardStockQuantity,
         created_at: PrimitiveDateTime,
         updated_at: PrimitiveDateTime,
-        deleted_at: PrimitiveDateTime,
+        deleted_at: Option<PrimitiveDateTime>,
     ) -> Self {
         Self {
             id,

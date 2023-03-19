@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS m_products (
     standard_stock_quantity int DEFAULT 0 NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    deleted_at TIMESTAMP DEFAULT null,
+    deleted_at TIMESTAMP DEFAULT NULL,
 
    PRIMARY KEY (id)
 );

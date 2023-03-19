@@ -21,7 +21,7 @@ pub struct ProductRow {
     standard_stock_quantity: i64,
     created_at: PrimitiveDateTime,
     updated_at: PrimitiveDateTime,
-    deleted_at: PrimitiveDateTime,
+    deleted_at: Option<PrimitiveDateTime>,
 }
 
 pub struct SqliteProductRepository {
@@ -143,7 +143,9 @@ mod tests {
         },
     };
 
-    #[sqlx::test]
+    pub static MIGRATOR: sqlx::migrate::Migrator = sqlx::migrate!("./database/migrations");
+
+    #[sqlx::test(migrator = "MIGRATOR")]
     async fn search_test(pool: SqlitePool) -> Result<(), Box<dyn std::error::Error>> {
         let repository = SqliteProductRepository::new(pool);
         let input = CreateProductInput::new(
@@ -162,7 +164,7 @@ mod tests {
         Ok(())
     }
 
-    #[sqlx::test]
+    #[sqlx::test(migrator = "MIGRATOR")]
     async fn create_test(pool: SqlitePool) -> Result<(), Box<dyn std::error::Error>> {
         let input = CreateProductInput::new(
             String::from("商品1"),
