@@ -24,9 +24,11 @@ pub(crate) async fn migrate_database(pool: &SqlitePool) -> DbResult<()> {
     Ok(())
 }
 
-pub(crate) async fn seeder() -> DbResult<()> {
+pub(crate) async fn seeder(pool: &SqlitePool) -> DbResult<()> {
     Ok(())
 }
+
+pub static MIGRATOR: sqlx::migrate::Migrator = sqlx::migrate!("./database/migrations");
 
 pub(crate) fn excute() -> Result<Pool<Sqlite>, Box<dyn Error>> {
     const DATABASE_DIR: &str = "sales-management-system";

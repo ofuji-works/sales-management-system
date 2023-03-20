@@ -141,9 +141,8 @@ mod tests {
             repository::product_repository::ProductAbstructRepository,
             usecase::product::create_product::CreateProductInput,
         },
+        infrastructure::database::MIGRATOR,
     };
-
-    pub static MIGRATOR: sqlx::migrate::Migrator = sqlx::migrate!("./database/migrations");
 
     #[sqlx::test(migrator = "MIGRATOR")]
     async fn search_test(pool: SqlitePool) -> Result<(), Box<dyn std::error::Error>> {
