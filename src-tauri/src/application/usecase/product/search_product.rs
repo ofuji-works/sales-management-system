@@ -1,5 +1,5 @@
 use serde::Serialize;
-use std::error::Error;
+use std::{error::Error, rc::Rc};
 
 use crate::{
     application::repository::product_repository::ProductAbstructRepository,
@@ -25,11 +25,11 @@ impl SearchProductOutput {
 }
 
 pub struct SearchProductUsecase {
-    repository: Box<dyn ProductAbstructRepository>,
+    repository: Rc<dyn ProductAbstructRepository>,
 }
 
 impl SearchProductUsecase {
-    pub fn new(repository: Box<dyn ProductAbstructRepository>) -> Self {
+    pub fn new(repository: Rc<dyn ProductAbstructRepository>) -> Self {
         Self { repository }
     }
 
@@ -47,6 +47,7 @@ impl SearchProductUsecase {
 mod tests {
 
     use sqlx::SqlitePool;
+    use std::rc::Rc;
 
     use crate::{
         adapters::gateway::product_repository::SqliteProductRepository,
@@ -78,7 +79,7 @@ mod tests {
         .execute(&mut conn)
         .await?;
 
-        let usecase = SearchProductUsecase::new(Box::new(repository));
+        let usecase = SearchProductUsecase::new(Rc::new(repository));
         let input = SearchProductInput::new();
         let outputs = usecase.search(input).await?;
         println!("{:?}", outputs);

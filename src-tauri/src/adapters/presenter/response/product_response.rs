@@ -4,7 +4,7 @@ use crate::{
     application::usecase::product::search_product::SearchProductOutput, domain::product::Product,
 };
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct SearchProductResponse {
     products: Vec<Product>,
 }
@@ -17,9 +17,11 @@ impl SearchProductResponse {
 }
 
 #[derive(Serialize)]
-pub struct CreateProductResponse {}
+pub struct CreateProductResponse {
+    product: Option<Product>,
+}
 impl CreateProductResponse {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(product: Option<Product>) -> Self {
+        Self { product }
     }
 }

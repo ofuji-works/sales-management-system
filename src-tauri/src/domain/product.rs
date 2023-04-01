@@ -6,8 +6,12 @@ pub struct ProductId {
     value: i64,
 }
 impl ProductId {
-    pub fn new(value: i64) -> Self {
-        Self { value }
+    pub fn new(value: &i64) -> Self {
+        Self { value: *value }
+    }
+
+    pub fn value(&self) -> i64 {
+        self.value
     }
 }
 
@@ -16,12 +20,14 @@ pub struct ProductName {
     value: String,
 }
 impl ProductName {
-    pub fn new(value: String) -> Self {
-        Self { value }
+    pub fn new(value: &str) -> Self {
+        Self {
+            value: value.to_string(),
+        }
     }
 
-    pub fn to_string(&self) -> String {
-        self.value.to_string()
+    pub fn value(&self) -> &str {
+        &self.value
     }
 }
 
@@ -30,12 +36,14 @@ pub struct ProductCode {
     value: String,
 }
 impl ProductCode {
-    pub fn new(value: String) -> Self {
-        Self { value }
+    pub fn new(value: &str) -> Self {
+        Self {
+            value: value.to_string(),
+        }
     }
 
-    pub fn to_string(&self) -> String {
-        self.value.to_string()
+    pub fn value(&self) -> &str {
+        &self.value
     }
 }
 
@@ -44,12 +52,14 @@ pub struct ProductUnit {
     value: String,
 }
 impl ProductUnit {
-    pub fn new(value: String) -> Self {
-        Self { value }
+    pub fn new(value: &str) -> Self {
+        Self {
+            value: value.to_string(),
+        }
     }
 
-    pub fn to_string(&self) -> String {
-        self.value.to_string()
+    pub fn value(&self) -> &str {
+        &self.value
     }
 }
 
@@ -58,11 +68,11 @@ pub struct DefaultPrice {
     value: i64,
 }
 impl DefaultPrice {
-    pub fn new(value: i64) -> Self {
-        Self { value }
+    pub fn new(value: &i64) -> Self {
+        Self { value: *value }
     }
 
-    pub fn to_integer(&self) -> i64 {
+    pub fn value(&self) -> i64 {
         self.value
     }
 }
@@ -72,11 +82,11 @@ pub struct StandardStockQuantity {
     value: i64,
 }
 impl StandardStockQuantity {
-    pub fn new(value: i64) -> Self {
-        Self { value }
+    pub fn new(value: &i64) -> Self {
+        Self { value: *value }
     }
 
-    pub fn to_integer(&self) -> i64 {
+    pub fn value(&self) -> i64 {
         self.value
     }
 }

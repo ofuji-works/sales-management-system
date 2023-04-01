@@ -5,19 +5,21 @@ use crate::application::usecase::product::{
     search_product::{SearchProductInput, SearchProductOutput, SearchProductUsecase},
 };
 use std::error::Error;
+use std::rc::Rc;
 
 pub(crate) async fn search_product(
     usecase: SearchProductUsecase,
 ) -> Result<SearchProductOutput, Box<dyn Error>> {
     let input = SearchProductInput::new();
     let output = usecase.search(input).await?;
+
     Ok(output)
 }
 
 pub(crate) async fn create_product(
     usecase: CreateProductUsecase,
     request: CreateProductRequest,
-) -> Result<CreateProductOutput, Box<dyn Error>> {
+) -> Result<CreateProductOutput, Rc<dyn Error>> {
     let input = CreateProductInput::new(
         request.name,
         request.code,
@@ -25,7 +27,7 @@ pub(crate) async fn create_product(
         request.default_price,
         request.standard_stock_quantity,
     );
-    let output = usecase.create(input)?;
+    let output = usecase.create(input).await?;
 
     Ok(output)
 }
