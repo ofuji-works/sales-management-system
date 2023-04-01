@@ -9,6 +9,7 @@
     "export": "next export",
     "start": "next start",
     "tauri": "tauri",
+    "tauri:dev": "RUST_BACKTRACE=1 tauri dev",
     "lint": "next lint"
   },
   "dependencies": {
