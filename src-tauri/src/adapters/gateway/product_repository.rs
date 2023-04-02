@@ -77,34 +77,36 @@ impl ProductRepository {
         conn: &mut PoolConnection<Sqlite>,
         product_id: &ProductId,
     ) -> Result<Option<Product>, Box<dyn Error>> {
-        let rows: Vec<ProductRow> = sqlx::query_as("SELECT * FROM m_products WHERE id = ?")
+        let row = sqlx::query_as::<_, ProductRow>("SELECT * FROM m_products WHERE id = ?")
             .bind(product_id.value())
-            .fetch_all(conn)
+            .fetch_optional(conn)
             .await?;
 
-        if rows.len() == 0 {
-            return Ok(None);
+        match row {
+            None => Ok(None),
+            Some(row) => {
+                let id = ProductId::new(&row.id);
+                let name = ProductName::new(&row.name);
+                let code = ProductCode::new(&row.code);
+                let unit = ProductUnit::new(&row.unit);
+                let default_price = DefaultPrice::new(&row.default_price);
+                let standard_stock_quantity =
+                    StandardStockQuantity::new(&row.standard_stock_quantity);
+                let product = Product::new(
+                    id,
+                    name,
+                    code,
+                    unit,
+                    default_price,
+                    standard_stock_quantity,
+                    row.created_at,
+                    row.updated_at,
+                    row.deleted_at,
+                );
+
+                Ok(Some(product))
+            }
         }
-
-        let id = ProductId::new(&rows[0].id);
-        let name = ProductName::new(&rows[0].name);
-        let code = ProductCode::new(&rows[0].code);
-        let unit = ProductUnit::new(&rows[0].unit);
-        let default_price = DefaultPrice::new(&rows[0].default_price);
-        let standard_stock_quantity = StandardStockQuantity::new(&rows[0].standard_stock_quantity);
-        let product = Product::new(
-            id,
-            name,
-            code,
-            unit,
-            default_price,
-            standard_stock_quantity,
-            rows[0].created_at,
-            rows[0].updated_at,
-            rows[0].deleted_at,
-        );
-
-        Ok(Some(product))
     }
 
     async fn search(conn: &mut PoolConnection<Sqlite>) -> Result<Vec<Product>, Box<dyn Error>> {
@@ -215,6 +217,24 @@ mod tests {
         let result = ProductRepository::create(&mut conn, &input).await?;
 
         assert_eq!(result.rows_affected(), 1);
+
+        Ok(())
+    }
+
+    #[sqlx::test(migrator = "MIGRATOR")]
+    async fn find_by_id_test(pool: SqlitePool) -> Result<(), Box<dyn std::error::Error>> {
+        let repository = SqliteProductRepository::new(pool);
+        let input = CreateProductInput::new(
+            String::from("商品1"),
+            String::from("product001"),
+            String::from("個"),
+            2000,
+            10,
+        );
+        let result = repository.create(&input).await?;
+        repository.create(&input).await?;
+        let product_id = result.product_id();
+        let product = repository.find_by_id(&product_id).await?;
 
         Ok(())
     }

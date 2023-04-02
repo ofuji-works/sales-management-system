@@ -82,7 +82,6 @@ mod tests {
         let usecase = SearchProductUsecase::new(Rc::new(repository));
         let input = SearchProductInput::new();
         let outputs = usecase.search(input).await?;
-        println!("{:?}", outputs);
         Ok(())
     }
 }

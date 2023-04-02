@@ -5,6 +5,7 @@ use crate::{
     domain::product::{Product, ProductId},
 };
 
+#[derive(Debug)]
 pub struct FindByIDProductOutput {
     pub product: Option<Product>,
 }
@@ -31,5 +32,52 @@ impl FindByIDProductUsecase {
         let output = FindByIDProductOutput::new(product);
 
         Ok(output)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use sqlx::SqlitePool;
+    use std::rc::Rc;
+
+    use crate::{
+        adapters::gateway::product_repository::SqliteProductRepository,
+        application::usecase::product::find_by_id_product::FindByIDProductUsecase,
+        domain::product::ProductId, infrastructure::database::MIGRATOR,
+    };
+
+    #[sqlx::test(migrator = "MIGRATOR")]
+    async fn find_by_id_test(pool: SqlitePool) -> Result<(), Box<dyn std::error::Error>> {
+        let mut conn = pool.acquire().await?;
+        let repository = SqliteProductRepository::new(pool);
+
+        let result = sqlx::query(
+            "INSERT INTO
+                m_products (
+                    id,
+                    name,
+                    code,
+                    unit,
+                    default_price,
+                    standard_stock_quantity
+                ) 
+                VALUES (
+                    2,
+                    \"商品1\",
+                    \"product001\",
+                    \"個\",
+                    2000,
+                    10
+            )",
+        )
+        .execute(&mut conn)
+        .await?;
+
+        let product_id = ProductId::new(&result.last_insert_rowid());
+        let usecase = FindByIDProductUsecase::new(Rc::new(repository));
+        let outputs = usecase.find_by_id(&product_id).await?;
+
+        Ok(())
     }
 }

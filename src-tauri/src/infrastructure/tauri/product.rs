@@ -91,7 +91,6 @@ mod tests {
         .execute(&mut conn)
         .await?;
         let response = search(pool).await?;
-        println!("{:?}", response);
 
         Ok(())
     }

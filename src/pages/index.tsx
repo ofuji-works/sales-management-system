@@ -36,7 +36,7 @@ export default function Home() {
           default_price: 2000,
           standard_stock_quantity: 10,
         },
-      }).then(() => console.log("Completed!"));
+      }).then((res) => console.log(res));
 
     invoke("search_product").then((res) => console.log(res));
   };
