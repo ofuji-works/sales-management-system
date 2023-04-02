@@ -1,13 +1,11 @@
 CREATE TABLE IF NOT EXISTS m_products (
-    id int AUTO_INCREMENT,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     name VARCHAR(100) NOT NULL,
     code VARCHAR(100) NOT NULL,
     unit VARCHAR(5) NOT NULL,
-    default_price int DEFAULT 0 NOT NULL,
-    standard_stock_quantity int DEFAULT 0 NOT NULL,
+    default_price INTEGER DEFAULT 0 NOT NULL,
+    standard_stock_quantity INTEGER DEFAULT 0 NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    deleted_at TIMESTAMP DEFAULT NULL,
-
-   PRIMARY KEY (id)
+    deleted_at TIMESTAMP DEFAULT NULL
 );
