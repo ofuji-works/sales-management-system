@@ -7,10 +7,48 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub struct SearchProductInput {}
+pub struct SearchProductInput {
+    offset: i64,
+    limit: i64,
+    name: Option<String>,
+    code: Option<String>,
+}
+
 impl SearchProductInput {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(
+        offset: Option<i64>,
+        limit: Option<i64>,
+        name: Option<String>,
+        code: Option<String>,
+    ) -> Self {
+        Self {
+            offset: match offset {
+                None => 0,
+                Some(offset) => offset,
+            },
+            limit: match limit {
+                None => 100,
+                Some(limit) => limit,
+            },
+            name,
+            code,
+        }
+    }
+
+    pub fn offset(&self) -> &i64 {
+        &self.offset
+    }
+
+    pub fn limit(&self) -> &i64 {
+        &self.limit
+    }
+
+    pub fn name(&self) -> &Option<String> {
+        &self.name
+    }
+
+    pub fn code(&self) -> &Option<String> {
+        &self.code
     }
 }
 
@@ -37,7 +75,7 @@ impl SearchProductUsecase {
         &self,
         input: SearchProductInput,
     ) -> Result<SearchProductOutput, Box<dyn Error>> {
-        let products = self.repository.search().await?;
+        let products = self.repository.search(&input).await?;
         let output = SearchProductOutput::new(products);
         Ok(output)
     }
@@ -80,7 +118,13 @@ mod tests {
         .await?;
 
         let usecase = SearchProductUsecase::new(Rc::new(repository));
-        let input = SearchProductInput::new();
+
+        let offset: Option<i64> = None;
+        let limit: Option<i64> = None;
+        let name: Option<String> = Some(String::from("商品1"));
+        let code: Option<String> = None;
+
+        let input = SearchProductInput::new(offset, limit, name, code);
         let outputs = usecase.search(input).await?;
         Ok(())
     }

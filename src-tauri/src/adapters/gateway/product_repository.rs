@@ -1,6 +1,6 @@
 use crate::application::{
     repository::product_repository::{CreateProductResult, ProductAbstructRepository},
-    usecase::product::create_product::CreateProductInput,
+    usecase::product::{create_product::CreateProductInput, search_product::SearchProductInput},
 };
 use crate::domain::product::{
     DefaultPrice, Product, ProductCode, ProductId, ProductName, ProductUnit, StandardStockQuantity,
@@ -43,9 +43,9 @@ impl ProductAbstructRepository for SqliteProductRepository {
         Ok(product)
     }
 
-    async fn search(&self) -> Result<Vec<Product>, Box<dyn Error>> {
+    async fn search(&self, input: &SearchProductInput) -> Result<Vec<Product>, Box<dyn Error>> {
         let mut conn = self.pool.acquire().await?;
-        let products = ProductRepository::search(&mut conn).await?;
+        let products = ProductRepository::search(&mut conn, input).await?;
 
         Ok(products)
     }
@@ -109,10 +109,19 @@ impl ProductRepository {
         }
     }
 
-    async fn search(conn: &mut PoolConnection<Sqlite>) -> Result<Vec<Product>, Box<dyn Error>> {
-        let rows: Vec<ProductRow> = sqlx::query_as("SELECT * FROM m_products")
-            .fetch_all(conn)
-            .await?;
+    async fn search(
+        conn: &mut PoolConnection<Sqlite>,
+        input: &SearchProductInput,
+    ) -> Result<Vec<Product>, Box<dyn Error>> {
+        let rows: Vec<ProductRow> = sqlx::query_as(
+            "SELECT * FROM m_products WHERE name = COALESCE(?, name) AND code = COALESCE(?, code) LIMIT ? OFFSET ?",
+        )
+        .bind(input.name())
+        .bind(input.code())
+        .bind(input.limit())
+        .bind(input.offset())
+        .fetch_all(conn)
+        .await?;
         let products = rows
             .into_iter()
             .map(|row| {
@@ -183,7 +192,9 @@ mod tests {
         adapters::gateway::product_repository::{ProductRepository, SqliteProductRepository},
         application::{
             repository::product_repository::ProductAbstructRepository,
-            usecase::product::create_product::CreateProductInput,
+            usecase::product::{
+                create_product::CreateProductInput, search_product::SearchProductInput,
+            },
         },
         infrastructure::database::MIGRATOR,
     };
@@ -199,7 +210,10 @@ mod tests {
             10,
         );
         repository.create(&input).await?;
-        let products = repository.search().await?;
+        let product_name = String::from("商品1");
+        let input = SearchProductInput::new(None, None, Some(product_name), None);
+        let products = repository.search(&input).await?;
+        println!("search_test: {:?}", products);
 
         Ok(())
     }

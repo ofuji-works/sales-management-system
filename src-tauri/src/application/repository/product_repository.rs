@@ -1,4 +1,5 @@
 use crate::application::usecase::product::create_product::CreateProductInput;
+use crate::application::usecase::product::search_product::SearchProductInput;
 use crate::domain::product::{Product, ProductId};
 use std::error::Error;
 
@@ -15,7 +16,7 @@ impl CreateProductResult {
 #[async_trait::async_trait]
 pub trait ProductAbstructRepository {
     async fn find_by_id(&self, id: &ProductId) -> Result<Option<Product>, Box<dyn Error>>;
-    async fn search(&self) -> Result<Vec<Product>, Box<dyn Error>>;
+    async fn search(&self, input: &SearchProductInput) -> Result<Vec<Product>, Box<dyn Error>>;
     async fn create(
         &self,
         product: &CreateProductInput,
