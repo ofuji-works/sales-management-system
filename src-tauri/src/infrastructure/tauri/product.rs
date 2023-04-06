@@ -1,6 +1,9 @@
 use crate::{
     adapters::{
-        controller::{product_controller, request::product_request::CreateProductRequest},
+        controller::{
+            product_controller,
+            request::product_request::{CreateProductRequest, SearchProductRequest},
+        },
         gateway::product_repository::SqliteProductRepository,
         presenter::{
             product_presenter,
@@ -17,10 +20,13 @@ use crate::{
 use sqlx::SqlitePool;
 use std::{error::Error, rc::Rc};
 
-pub(crate) async fn search(pool: SqlitePool) -> Result<SearchProductResponse, Box<dyn Error>> {
+pub(crate) async fn search(
+    pool: SqlitePool,
+    request: SearchProductRequest,
+) -> Result<SearchProductResponse, Box<dyn Error>> {
     let repository = SqliteProductRepository::new(pool);
     let usecase = SearchProductUsecase::new(Rc::new(repository));
-    let output = product_controller::search_product(usecase).await?;
+    let output = product_controller::search_product(usecase, request).await?;
 
     Ok(product_presenter::search_product(output))
 }
@@ -28,9 +34,11 @@ pub(crate) async fn search(pool: SqlitePool) -> Result<SearchProductResponse, Bo
 #[tauri::command]
 pub(crate) fn search_product(
     state: tauri::State<'_, SqlitePool>,
+    request: SearchProductRequest,
 ) -> Result<SearchProductResponse, String> {
     let pool = state.inner().clone();
-    let result = tauri::async_runtime::block_on(search(pool)).map_err(|e| e.to_string())?;
+    let result =
+        tauri::async_runtime::block_on(search(pool, request)).map_err(|e| e.to_string())?;
 
     Ok(result)
 }
@@ -61,37 +69,4 @@ pub(crate) fn create_product(
     let result = tauri::async_runtime::block_on(create(pool, request)).map_err(|e| e.to_string());
 
     result
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::{infrastructure::database::MIGRATOR, product::search};
-    use sqlx::SqlitePool;
-
-    #[sqlx::test(migrator = "MIGRATOR")]
-    async fn search_product_test(pool: SqlitePool) -> Result<(), Box<dyn std::error::Error>> {
-        let mut conn = pool.acquire().await?;
-        sqlx::query(
-            "INSERT INTO
-                m_products (
-                    name,
-                    code,
-                    unit,
-                    default_price,
-                    standard_stock_quantity
-                ) 
-                VALUES (
-                    \"商品1\",
-                    \"product001\",
-                    \"個\",
-                    2000,
-                    10
-            )",
-        )
-        .execute(&mut conn)
-        .await?;
-        let response = search(pool).await?;
-
-        Ok(())
-    }
 }

@@ -7,10 +7,18 @@ use crate::application::usecase::product::{
 use std::error::Error;
 use std::rc::Rc;
 
+use super::request::product_request::SearchProductRequest;
+
 pub(crate) async fn search_product(
     usecase: SearchProductUsecase,
+    request: SearchProductRequest,
 ) -> Result<SearchProductOutput, Box<dyn Error>> {
-    let input = SearchProductInput::new();
+    let offset: Option<i64> = *request.offset();
+    let limit: Option<i64> = *request.limit();
+    let name: Option<String> = request.name().clone();
+    let code: Option<String> = request.code().clone();
+
+    let input = SearchProductInput::new(offset, limit, name, code);
     let output = usecase.search(input).await?;
 
     Ok(output)
