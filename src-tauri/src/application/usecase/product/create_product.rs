@@ -1,6 +1,8 @@
 use crate::{
     application::repository::product_repository::{CreateProductResult, ProductAbstructRepository},
-    domain::product::{DefaultPrice, ProductCode, ProductName, ProductUnit, StandardStockQuantity},
+    domain::product::{
+        ProductCode, ProductDefaultPrice, ProductName, ProductStandardStockQuantity, ProductUnit,
+    },
 };
 use std::{error::Error, rc::Rc};
 
@@ -8,8 +10,8 @@ pub struct CreateProductInput {
     pub name: ProductName,
     pub code: ProductCode,
     pub unit: ProductUnit,
-    pub default_price: DefaultPrice,
-    pub standard_stock_quantity: StandardStockQuantity,
+    pub default_price: ProductDefaultPrice,
+    pub standard_stock_quantity: ProductStandardStockQuantity,
 }
 impl CreateProductInput {
     pub fn new(
@@ -22,8 +24,9 @@ impl CreateProductInput {
         let product_name = ProductName::new(&name);
         let product_code = ProductCode::new(&code);
         let product_unit = ProductUnit::new(&unit);
-        let product_default_price = DefaultPrice::new(&default_price);
-        let product_standard_stock_quantity = StandardStockQuantity::new(&standard_stock_quantity);
+        let product_default_price = ProductDefaultPrice::new(&default_price);
+        let product_standard_stock_quantity =
+            ProductStandardStockQuantity::new(&standard_stock_quantity);
         Self {
             name: product_name,
             code: product_code,
