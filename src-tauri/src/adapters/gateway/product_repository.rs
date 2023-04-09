@@ -1,13 +1,17 @@
 use crate::application::{
     repository::product_repository::{CreateProductResult, ProductAbstructRepository},
-    usecase::product::{create_product::CreateProductInput, search_product::SearchProductInput},
+    usecase::product::{
+        create_product::CreateProductInput, search_product::SearchProductInput,
+        update_product::UpdateProductParams,
+    },
 };
 use crate::domain::product::{
-    DefaultPrice, Product, ProductCode, ProductId, ProductName, ProductUnit, StandardStockQuantity,
+    Product, ProductCode, ProductDefaultPrice, ProductId, ProductName,
+    ProductStandardStockQuantity, ProductUnit,
 };
 use async_trait::async_trait;
-use sqlx::sqlite::SqliteQueryResult;
-use sqlx::{pool::PoolConnection, Sqlite, SqlitePool};
+use sqlx::{pool::PoolConnection, Execute, Sqlite, SqlitePool};
+use sqlx::{query_builder, sqlite::SqliteQueryResult};
 use std::error::Error;
 use time::PrimitiveDateTime;
 
@@ -61,7 +65,10 @@ impl ProductAbstructRepository for SqliteProductRepository {
         Ok(CreateProductResult { product_id })
     }
 
-    async fn update(&self, product_id: &ProductId) -> Result<(), Box<dyn Error>> {
+    async fn update(&self, params: &UpdateProductParams) -> Result<(), Box<dyn Error>> {
+        let mut conn = self.pool.acquire().await?;
+        let result = ProductRepository::update(&mut conn, params).await?;
+
         Ok(())
     }
 
@@ -89,9 +96,9 @@ impl ProductRepository {
                 let name = ProductName::new(&row.name);
                 let code = ProductCode::new(&row.code);
                 let unit = ProductUnit::new(&row.unit);
-                let default_price = DefaultPrice::new(&row.default_price);
+                let default_price = ProductDefaultPrice::new(&row.default_price);
                 let standard_stock_quantity =
-                    StandardStockQuantity::new(&row.standard_stock_quantity);
+                    ProductStandardStockQuantity::new(&row.standard_stock_quantity);
                 let product = Product::new(
                     id,
                     name,
@@ -129,9 +136,9 @@ impl ProductRepository {
                 let name = ProductName::new(&row.name);
                 let code = ProductCode::new(&row.code);
                 let unit = ProductUnit::new(&row.unit);
-                let default_price = DefaultPrice::new(&row.default_price);
+                let default_price = ProductDefaultPrice::new(&row.default_price);
                 let standard_stock_quantity =
-                    StandardStockQuantity::new(&row.standard_stock_quantity);
+                    ProductStandardStockQuantity::new(&row.standard_stock_quantity);
 
                 Product::new(
                     id,
@@ -174,7 +181,48 @@ impl ProductRepository {
         Ok(result)
     }
 
-    async fn update(&self, product_id: &ProductId) -> Result<(), Box<dyn Error>> {
+    async fn update(
+        conn: &mut PoolConnection<Sqlite>,
+        params: &UpdateProductParams,
+    ) -> Result<(), Box<dyn Error>> {
+        let mut pre_query_builder =
+            query_builder::QueryBuilder::<Sqlite>::new("UPDATE m_products SET ");
+
+        let mut separated = pre_query_builder.separated(", ");
+        if let Some(name) = params.name() {
+            separated.push("name = ");
+            separated.push_bind_unseparated(name.value());
+        }
+        if let Some(code) = params.code() {
+            separated.push("code = ");
+            separated.push_bind_unseparated(code.value());
+        }
+        if let Some(unit) = params.unit() {
+            separated.push("unit = ");
+            separated.push_bind_unseparated(unit.value());
+        }
+        if let Some(default_price) = params.default_price() {
+            separated.push("default_price = ");
+            separated.push_bind_unseparated(default_price.value());
+        }
+        if let Some(standard_stock_quantity) = params.standard_stock_quantity() {
+            separated.push("standard_stock_quantity = ");
+            separated.push_bind_unseparated(standard_stock_quantity.value());
+        }
+
+        let mut query_without_where = pre_query_builder.build();
+        let is_update_colums = query_without_where.sql().ends_with("= ?");
+        if !is_update_colums {
+            return Ok(());
+        }
+
+        let mut query_builder =
+            query_builder::QueryBuilder::<Sqlite>::new(query_without_where.sql());
+        query_builder.push(" WHERE id = ");
+        query_builder.push_bind(params.id().value());
+        let mut query = query_builder.build();
+        let result = sqlx::query(&query.sql()).execute(conn).await?;
+
         Ok(())
     }
 
@@ -194,6 +242,7 @@ mod tests {
             repository::product_repository::ProductAbstructRepository,
             usecase::product::{
                 create_product::CreateProductInput, search_product::SearchProductInput,
+                update_product::UpdateProductParams,
             },
         },
         infrastructure::database::MIGRATOR,
@@ -231,6 +280,35 @@ mod tests {
         let result = ProductRepository::create(&mut conn, &input).await?;
 
         assert_eq!(result.rows_affected(), 1);
+
+        Ok(())
+    }
+
+    #[sqlx::test(migrator = "MIGRATOR")]
+    async fn update_test(pool: SqlitePool) -> Result<(), Box<dyn std::error::Error>> {
+        let repository = SqliteProductRepository::new(pool);
+        let input = CreateProductInput::new(
+            String::from("商品1"),
+            String::from("product001"),
+            String::from("個"),
+            2000,
+            10,
+        );
+        let result = repository.create(&input).await?;
+        repository.create(&input).await?;
+        let product_id = result.product_id();
+        let params = UpdateProductParams::new(
+            product_id.value(),
+            Some(String::from("商品1更新後")),
+            Some(String::from("product001更新後")),
+            Some(String::from("個更新後")),
+            None,
+            None,
+            // None,
+            // None,
+            // None,
+        );
+        let product = repository.update(&params).await?;
 
         Ok(())
     }
