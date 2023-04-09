@@ -64,10 +64,10 @@ impl ProductUnit {
 }
 
 #[derive(Serialize, Debug)]
-pub struct DefaultPrice {
+pub struct ProductDefaultPrice {
     value: i64,
 }
-impl DefaultPrice {
+impl ProductDefaultPrice {
     pub fn new(value: &i64) -> Self {
         Self { value: *value }
     }
@@ -78,10 +78,10 @@ impl DefaultPrice {
 }
 
 #[derive(Serialize, Debug)]
-pub struct StandardStockQuantity {
+pub struct ProductStandardStockQuantity {
     value: i64,
 }
-impl StandardStockQuantity {
+impl ProductStandardStockQuantity {
     pub fn new(value: &i64) -> Self {
         Self { value: *value }
     }
@@ -97,8 +97,8 @@ pub struct Product {
     name: ProductName,
     code: ProductCode,
     unit: ProductUnit,
-    default_price: DefaultPrice,
-    standard_stock_quantity: StandardStockQuantity,
+    default_price: ProductDefaultPrice,
+    standard_stock_quantity: ProductStandardStockQuantity,
     created_at: PrimitiveDateTime,
     updated_at: PrimitiveDateTime,
     deleted_at: Option<PrimitiveDateTime>,
@@ -109,8 +109,8 @@ impl Product {
         name: ProductName,
         code: ProductCode,
         unit: ProductUnit,
-        default_price: DefaultPrice,
-        standard_stock_quantity: StandardStockQuantity,
+        default_price: ProductDefaultPrice,
+        standard_stock_quantity: ProductStandardStockQuantity,
         created_at: PrimitiveDateTime,
         updated_at: PrimitiveDateTime,
         deleted_at: Option<PrimitiveDateTime>,
