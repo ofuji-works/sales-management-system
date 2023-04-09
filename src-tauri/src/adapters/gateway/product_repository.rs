@@ -210,7 +210,7 @@ impl ProductRepository {
             separated.push_bind_unseparated(standard_stock_quantity.value());
         }
 
-        let mut query_without_where = pre_query_builder.build();
+        let query_without_where = pre_query_builder.build();
         let is_update_colums = query_without_where.sql().ends_with("= ?");
         if !is_update_colums {
             return Ok(());
@@ -220,7 +220,7 @@ impl ProductRepository {
             query_builder::QueryBuilder::<Sqlite>::new(query_without_where.sql());
         query_builder.push(" WHERE id = ");
         query_builder.push_bind(params.id().value());
-        let mut query = query_builder.build();
+        let query = query_builder.build();
         let result = sqlx::query(&query.sql()).execute(conn).await?;
 
         Ok(())
