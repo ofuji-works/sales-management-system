@@ -6,10 +6,28 @@ use std::error::Error;
 
 #[derive(Debug)]
 pub struct CreateProductResult {
-    pub product_id: ProductId,
+    product_id: ProductId,
 }
 impl CreateProductResult {
+    pub fn new(product_id: ProductId) -> Self {
+        Self { product_id }
+    }
+
     pub fn product_id(&self) -> &ProductId {
+        &self.product_id
+    }
+}
+
+#[derive(Debug)]
+pub struct UpdateProductResult {
+    product_id: Option<ProductId>,
+}
+impl UpdateProductResult {
+    pub fn new(product_id: Option<ProductId>) -> Self {
+        Self { product_id }
+    }
+
+    pub fn product_id(&self) -> &Option<ProductId> {
         &self.product_id
     }
 }
@@ -22,6 +40,9 @@ pub trait ProductAbstructRepository {
         &self,
         product: &CreateProductInput,
     ) -> Result<CreateProductResult, Box<dyn Error>>;
-    async fn update(&self, input: &UpdateProductInput) -> Result<(), Box<dyn Error>>;
+    async fn update(
+        &self,
+        input: &UpdateProductInput,
+    ) -> Result<UpdateProductResult, Box<dyn Error>>;
     async fn delete(&self, product_id: &ProductId) -> Result<(), Box<dyn Error>>;
 }

@@ -1,5 +1,7 @@
 use crate::application::{
-    repository::product_repository::{CreateProductResult, ProductAbstructRepository},
+    repository::product_repository::{
+        CreateProductResult, ProductAbstructRepository, UpdateProductResult,
+    },
     usecase::product::{
         create_product::CreateProductInput, search_product::SearchProductInput,
         update_product::UpdateProductInput,
@@ -61,15 +63,24 @@ impl ProductAbstructRepository for SqliteProductRepository {
         let mut conn = self.pool.acquire().await?;
         let result = ProductRepository::create(&mut conn, &product).await?;
         let product_id = ProductId::new(&result.last_insert_rowid());
+        let create_product_result = CreateProductResult::new(product_id);
 
-        Ok(CreateProductResult { product_id })
+        Ok(create_product_result)
     }
 
-    async fn update(&self, input: &UpdateProductInput) -> Result<(), Box<dyn Error>> {
+    async fn update(
+        &self,
+        input: &UpdateProductInput,
+    ) -> Result<UpdateProductResult, Box<dyn Error>> {
         let mut conn = self.pool.acquire().await?;
         let result = ProductRepository::update(&mut conn, input).await?;
+        let product_id: Option<ProductId> = match result {
+            Some(result) => Some(ProductId::new(&result.last_insert_rowid())),
+            None => None,
+        };
+        let update_product_result = UpdateProductResult::new(product_id);
 
-        Ok(())
+        Ok(update_product_result)
     }
 
     async fn delete(&self, product_id: &ProductId) -> Result<(), Box<dyn Error>> {
@@ -184,7 +195,7 @@ impl ProductRepository {
     async fn update(
         conn: &mut PoolConnection<Sqlite>,
         input: &UpdateProductInput,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<Option<SqliteQueryResult>, Box<dyn Error>> {
         let mut pre_query_builder =
             query_builder::QueryBuilder::<Sqlite>::new("UPDATE m_products SET ");
 
@@ -213,7 +224,7 @@ impl ProductRepository {
         let query_without_where = pre_query_builder.build();
         let is_update_colums = query_without_where.sql().ends_with("= ?");
         if !is_update_colums {
-            return Ok(());
+            return Ok(None);
         }
 
         let mut query_builder =
@@ -223,7 +234,7 @@ impl ProductRepository {
         let query = query_builder.build();
         let result = sqlx::query(&query.sql()).execute(conn).await?;
 
-        Ok(())
+        Ok(Some(result))
     }
 
     async fn delete(&self, product_id: &ProductId) -> Result<(), Box<dyn Error>> {
@@ -262,7 +273,6 @@ mod tests {
         let product_name = String::from("商品1");
         let input = SearchProductInput::new(None, None, Some(product_name), None);
         let products = repository.search(&input).await?;
-        println!("search_test: {:?}", products);
 
         Ok(())
     }
@@ -308,7 +318,7 @@ mod tests {
             // None,
             // None,
         );
-        let product = repository.update(&params).await?;
+        let result = repository.update(&params).await?;
 
         Ok(())
     }
