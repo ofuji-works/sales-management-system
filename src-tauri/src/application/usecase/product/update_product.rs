@@ -4,7 +4,7 @@ use crate::domain::product::{
 };
 
 #[derive(Debug)]
-pub struct UpdateProductParams {
+pub struct UpdateProductInput {
     id: ProductId,
     name: Option<ProductName>,
     code: Option<ProductCode>,
@@ -12,7 +12,7 @@ pub struct UpdateProductParams {
     default_price: Option<ProductDefaultPrice>,
     standard_stock_quantity: Option<ProductStandardStockQuantity>,
 }
-impl UpdateProductParams {
+impl UpdateProductInput {
     pub fn new(
         product_id: i64,
         product_name: Option<String>,

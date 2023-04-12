@@ -1,6 +1,6 @@
 use crate::application::usecase::product::create_product::CreateProductInput;
 use crate::application::usecase::product::search_product::SearchProductInput;
-use crate::application::usecase::product::update_product::UpdateProductParams;
+use crate::application::usecase::product::update_product::UpdateProductInput;
 use crate::domain::product::{Product, ProductId};
 use std::error::Error;
 
@@ -22,6 +22,6 @@ pub trait ProductAbstructRepository {
         &self,
         product: &CreateProductInput,
     ) -> Result<CreateProductResult, Box<dyn Error>>;
-    async fn update(&self, product: &UpdateProductParams) -> Result<(), Box<dyn Error>>;
+    async fn update(&self, input: &UpdateProductInput) -> Result<(), Box<dyn Error>>;
     async fn delete(&self, product_id: &ProductId) -> Result<(), Box<dyn Error>>;
 }

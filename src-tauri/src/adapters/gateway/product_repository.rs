@@ -2,7 +2,7 @@ use crate::application::{
     repository::product_repository::{CreateProductResult, ProductAbstructRepository},
     usecase::product::{
         create_product::CreateProductInput, search_product::SearchProductInput,
-        update_product::UpdateProductParams,
+        update_product::UpdateProductInput,
     },
 };
 use crate::domain::product::{
@@ -65,9 +65,9 @@ impl ProductAbstructRepository for SqliteProductRepository {
         Ok(CreateProductResult { product_id })
     }
 
-    async fn update(&self, params: &UpdateProductParams) -> Result<(), Box<dyn Error>> {
+    async fn update(&self, input: &UpdateProductInput) -> Result<(), Box<dyn Error>> {
         let mut conn = self.pool.acquire().await?;
-        let result = ProductRepository::update(&mut conn, params).await?;
+        let result = ProductRepository::update(&mut conn, input).await?;
 
         Ok(())
     }
@@ -183,29 +183,29 @@ impl ProductRepository {
 
     async fn update(
         conn: &mut PoolConnection<Sqlite>,
-        params: &UpdateProductParams,
+        input: &UpdateProductInput,
     ) -> Result<(), Box<dyn Error>> {
         let mut pre_query_builder =
             query_builder::QueryBuilder::<Sqlite>::new("UPDATE m_products SET ");
 
         let mut separated = pre_query_builder.separated(", ");
-        if let Some(name) = params.name() {
+        if let Some(name) = input.name() {
             separated.push("name = ");
             separated.push_bind_unseparated(name.value());
         }
-        if let Some(code) = params.code() {
+        if let Some(code) = input.code() {
             separated.push("code = ");
             separated.push_bind_unseparated(code.value());
         }
-        if let Some(unit) = params.unit() {
+        if let Some(unit) = input.unit() {
             separated.push("unit = ");
             separated.push_bind_unseparated(unit.value());
         }
-        if let Some(default_price) = params.default_price() {
+        if let Some(default_price) = input.default_price() {
             separated.push("default_price = ");
             separated.push_bind_unseparated(default_price.value());
         }
-        if let Some(standard_stock_quantity) = params.standard_stock_quantity() {
+        if let Some(standard_stock_quantity) = input.standard_stock_quantity() {
             separated.push("standard_stock_quantity = ");
             separated.push_bind_unseparated(standard_stock_quantity.value());
         }
@@ -219,7 +219,7 @@ impl ProductRepository {
         let mut query_builder =
             query_builder::QueryBuilder::<Sqlite>::new(query_without_where.sql());
         query_builder.push(" WHERE id = ");
-        query_builder.push_bind(params.id().value());
+        query_builder.push_bind(input.id().value());
         let query = query_builder.build();
         let result = sqlx::query(&query.sql()).execute(conn).await?;
 
@@ -242,7 +242,7 @@ mod tests {
             repository::product_repository::ProductAbstructRepository,
             usecase::product::{
                 create_product::CreateProductInput, search_product::SearchProductInput,
-                update_product::UpdateProductParams,
+                update_product::UpdateProductInput,
             },
         },
         infrastructure::database::MIGRATOR,
@@ -297,7 +297,7 @@ mod tests {
         let result = repository.create(&input).await?;
         repository.create(&input).await?;
         let product_id = result.product_id();
-        let params = UpdateProductParams::new(
+        let params = UpdateProductInput::new(
             product_id.value(),
             Some(String::from("商品1更新後")),
             Some(String::from("product001更新後")),
