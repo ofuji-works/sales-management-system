@@ -2,18 +2,23 @@ use crate::{
     adapters::{
         controller::{
             product_controller,
-            request::product_request::{CreateProductRequest, SearchProductRequest},
+            request::product_request::{
+                CreateProductRequest, SearchProductRequest, UpdateProductRequest,
+            },
         },
         gateway::product_repository::SqliteProductRepository,
         presenter::{
             product_presenter,
-            response::product_response::{CreateProductResponse, SearchProductResponse},
+            response::product_response::{
+                CreateProductResponse, SearchProductResponse, UpdateProductResponse,
+            },
         },
     },
     application::usecase::{
         product::create_product::CreateProductUsecase,
         product::{
             find_by_id_product::FindByIDProductUsecase, search_product::SearchProductUsecase,
+            update_product::UpdateProductUsecase,
         },
     },
 };
@@ -67,6 +72,39 @@ pub(crate) fn create_product(
 ) -> Result<CreateProductResponse, String> {
     let pool = state.inner().clone();
     let result = tauri::async_runtime::block_on(create(pool, request)).map_err(|e| e.to_string());
+
+    result
+}
+
+pub(crate) async fn update(
+    pool: SqlitePool,
+    request: UpdateProductRequest,
+) -> Result<UpdateProductResponse, Rc<dyn Error>> {
+    let respository = Rc::new(SqliteProductRepository::new(pool));
+    let update_product_usecase = UpdateProductUsecase::new(respository.clone());
+    let output = product_controller::update_product(update_product_usecase, request).await?;
+
+    let find_by_id_product_usecase = FindByIDProductUsecase::new(respository.clone());
+
+    if let Some(product_id) = output.result().product_id() {
+        let product = find_by_id_product_usecase
+            .find_by_id(product_id)
+            .await?
+            .product;
+
+        Ok(product_presenter::update_product(output, product))
+    } else {
+        Ok(product_presenter::update_product(output, None))
+    }
+}
+
+#[tauri::command]
+pub(crate) async fn update_product(
+    state: tauri::State<'_, SqlitePool>,
+    request: UpdateProductRequest,
+) -> Result<(UpdateProductResponse), String> {
+    let pool = state.inner().clone();
+    let result = tauri::async_runtime::block_on(update(pool, request)).map_err(|e| e.to_string());
 
     result
 }

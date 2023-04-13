@@ -25,3 +25,13 @@ impl CreateProductResponse {
         Self { product }
     }
 }
+
+#[derive(Serialize)]
+pub struct UpdateProductResponse {
+    product: Option<Product>,
+}
+impl UpdateProductResponse {
+    pub fn new(product: Option<Product>) -> Self {
+        Self { product }
+    }
+}

@@ -33,3 +33,13 @@ pub struct CreateProductRequest {
     pub default_price: i64,
     pub standard_stock_quantity: i64,
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct UpdateProductRequest {
+    pub id: i64,
+    pub name: Option<String>,
+    pub code: Option<String>,
+    pub unit: Option<String>,
+    pub default_price: Option<i64>,
+    pub standard_stock_quantity: Option<i64>,
+}

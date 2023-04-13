@@ -1,7 +1,11 @@
-use crate::domain::product::{
-    ProductCode, ProductDefaultPrice, ProductId, ProductName, ProductStandardStockQuantity,
-    ProductUnit,
+use crate::{
+    application::repository::product_repository::{ProductAbstructRepository, UpdateProductResult},
+    domain::product::{
+        ProductCode, ProductDefaultPrice, ProductId, ProductName, ProductStandardStockQuantity,
+        ProductUnit,
+    },
 };
+use std::{error::Error, rc::Rc};
 
 #[derive(Debug)]
 pub struct UpdateProductInput {
@@ -19,7 +23,7 @@ impl UpdateProductInput {
         product_code: Option<String>,
         product_unit: Option<String>,
         product_default_price: Option<i64>,
-        product_standard_stock_quantity: Option<&i64>,
+        product_standard_stock_quantity: Option<i64>,
     ) -> Self {
         let id = ProductId::new(&product_id);
         let name = match product_name {
@@ -40,7 +44,7 @@ impl UpdateProductInput {
         };
         let standard_stock_quantity = match product_standard_stock_quantity {
             Some(standard_stock_quantity) => {
-                Some(ProductStandardStockQuantity::new(standard_stock_quantity))
+                Some(ProductStandardStockQuantity::new(&standard_stock_quantity))
             }
             None => None,
         };
@@ -77,5 +81,37 @@ impl UpdateProductInput {
 
     pub fn standard_stock_quantity(&self) -> &Option<ProductStandardStockQuantity> {
         &self.standard_stock_quantity
+    }
+}
+
+pub struct UpdateProductOutput {
+    result: UpdateProductResult,
+}
+impl UpdateProductOutput {
+    pub fn new(result: UpdateProductResult) -> Self {
+        Self { result }
+    }
+
+    pub fn result(&self) -> &UpdateProductResult {
+        &self.result
+    }
+}
+
+pub struct UpdateProductUsecase {
+    repository: Rc<dyn ProductAbstructRepository>,
+}
+impl UpdateProductUsecase {
+    pub fn new(repository: Rc<dyn ProductAbstructRepository>) -> Self {
+        Self { repository }
+    }
+
+    pub async fn update(
+        &self,
+        input: UpdateProductInput,
+    ) -> Result<UpdateProductOutput, Box<dyn Error>> {
+        let update_product_result = self.repository.update(&input).await?;
+        let result = UpdateProductOutput::new(update_product_result);
+
+        Ok(result)
     }
 }

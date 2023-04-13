@@ -1,5 +1,8 @@
 use crate::adapters::controller::request::product_request::CreateProductRequest;
 use crate::application::usecase::product::create_product::CreateProductOutput;
+use crate::application::usecase::product::update_product::{
+    UpdateProductInput, UpdateProductOutput, UpdateProductUsecase,
+};
 use crate::application::usecase::product::{
     create_product::{CreateProductInput, CreateProductUsecase},
     search_product::{SearchProductInput, SearchProductOutput, SearchProductUsecase},
@@ -7,7 +10,7 @@ use crate::application::usecase::product::{
 use std::error::Error;
 use std::rc::Rc;
 
-use super::request::product_request::SearchProductRequest;
+use super::request::product_request::{SearchProductRequest, UpdateProductRequest};
 
 pub(crate) async fn search_product(
     usecase: SearchProductUsecase,
@@ -36,6 +39,23 @@ pub(crate) async fn create_product(
         request.standard_stock_quantity,
     );
     let output = usecase.create(input).await?;
+
+    Ok(output)
+}
+
+pub(crate) async fn update_product(
+    usecase: UpdateProductUsecase,
+    request: UpdateProductRequest,
+) -> Result<UpdateProductOutput, Rc<dyn Error>> {
+    let input = UpdateProductInput::new(
+        request.id,
+        request.name,
+        request.code,
+        request.unit,
+        request.default_price,
+        request.standard_stock_quantity,
+    );
+    let output = usecase.update(input).await?;
 
     Ok(output)
 }
