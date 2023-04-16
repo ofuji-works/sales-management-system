@@ -115,3 +115,54 @@ impl UpdateProductUsecase {
         Ok(result)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        adapters::gateway::product_repository::SqliteProductRepository,
+        application::usecase::product::update_product::{UpdateProductInput, UpdateProductUsecase},
+        infrastructure::database::MIGRATOR,
+    };
+    use sqlx::SqlitePool;
+    use std::{error::Error, rc::Rc};
+
+    #[sqlx::test(migrator = "MIGRATOR")]
+    async fn update_test(pool: SqlitePool) -> Result<(), Box<dyn Error>> {
+        let mut conn = pool.acquire().await?;
+        let repository = Rc::new(SqliteProductRepository::new(pool));
+        let usecase = UpdateProductUsecase::new(repository.clone());
+
+        sqlx::query(
+            "INSERT INTO
+                m_products (
+                    name,
+                    code,
+                    unit,
+                    default_price,
+                    standard_stock_quantity
+                ) 
+                VALUES (
+                    \"商品1\",
+                    \"product001\",
+                    \"個\",
+                    2000,
+                    10
+            )",
+        )
+        .execute(&mut conn)
+        .await?;
+
+        let input = UpdateProductInput::new(
+            1,
+            Some(String::from("更新された商品")),
+            None,
+            None,
+            None,
+            None,
+        );
+
+        let result = usecase.update(input).await?;
+
+        Ok(())
+    }
+}
