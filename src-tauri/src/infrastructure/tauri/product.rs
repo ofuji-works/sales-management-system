@@ -85,24 +85,19 @@ pub(crate) async fn update(
     let output = product_controller::update_product(update_product_usecase, request).await?;
 
     let find_by_id_product_usecase = FindByIDProductUsecase::new(respository.clone());
+    let product = find_by_id_product_usecase
+        .find_by_id(output.result().product_id())
+        .await?
+        .product;
 
-    if let Some(product_id) = output.result().product_id() {
-        let product = find_by_id_product_usecase
-            .find_by_id(product_id)
-            .await?
-            .product;
-
-        Ok(product_presenter::update_product(output, product))
-    } else {
-        Ok(product_presenter::update_product(output, None))
-    }
+    Ok(product_presenter::update_product(output, product))
 }
 
 #[tauri::command]
-pub(crate) async fn update_product(
+pub(crate) fn update_product(
     state: tauri::State<'_, SqlitePool>,
     request: UpdateProductRequest,
-) -> Result<(UpdateProductResponse), String> {
+) -> Result<UpdateProductResponse, String> {
     let pool = state.inner().clone();
     let result = tauri::async_runtime::block_on(update(pool, request)).map_err(|e| e.to_string());
 

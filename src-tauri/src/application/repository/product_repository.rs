@@ -20,14 +20,14 @@ impl CreateProductResult {
 
 #[derive(Debug)]
 pub struct UpdateProductResult {
-    product_id: Option<ProductId>,
+    product_id: ProductId,
 }
 impl UpdateProductResult {
-    pub fn new(product_id: Option<ProductId>) -> Self {
+    pub fn new(product_id: ProductId) -> Self {
         Self { product_id }
     }
 
-    pub fn product_id(&self) -> &Option<ProductId> {
+    pub fn product_id(&self) -> &ProductId {
         &self.product_id
     }
 }
