@@ -43,7 +43,7 @@ module.exports = [
     es2021: true,
   }),
   {
-    ignores: ['eslint.config.js'],
+    ignores: ['eslint.config.js', 'out/*', 'src-tauri/*', '.next/*'],
   },
   {
     rules: {
@@ -56,6 +56,15 @@ module.exports = [
       'import/namespace': 'off',
       'import/named': 'off',
       'import/default': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+          destructuredArrayIgnorePattern: '^_',
+        },
+      ],
     },
   },
   {
