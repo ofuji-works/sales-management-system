@@ -84,6 +84,7 @@ impl UpdateProductInput {
     }
 }
 
+#[derive(Debug)]
 pub struct UpdateProductOutput {
     result: UpdateProductResult,
 }

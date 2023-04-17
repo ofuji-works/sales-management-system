@@ -34,7 +34,7 @@ pub struct CreateProductRequest {
     pub standard_stock_quantity: i64,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateProductRequest {
     pub id: i64,
     pub name: Option<String>,
