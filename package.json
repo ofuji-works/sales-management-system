@@ -13,6 +13,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@hookform/resolvers": "^3.1.0",
     "@next/font": "13.1.6",
     "@tauri-apps/api": "^1.2.0",
     "next": "13.1.6",
