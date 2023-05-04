@@ -6,16 +6,10 @@ import { useEffect, useState } from 'react'
 import { Product, findByIdProduct } from '@/api/product'
 import { isPageParameters } from '@/features/product'
 
-type TempProduct = Omit<Product, 'id' | 'name' | 'code'> & {
-  id: string
-  name: string
-  code: string
-}
-
 const Page: NextPage = () => {
   const router = useRouter()
   const [loading, setLoading] = useState<boolean>(false)
-  const [product, setProduct] = useState<TempProduct>()
+  const [product, setProduct] = useState<Product>()
 
   useEffect(() => {
     if (isPageParameters(router.query)) {

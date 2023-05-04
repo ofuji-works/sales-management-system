@@ -8,8 +8,7 @@ use crate::application::{
     },
 };
 use crate::domain::product::{
-    Product, ProductCode, ProductDefaultPrice, ProductId, ProductName,
-    ProductStandardStockQuantity, ProductUnit,
+    Product, ProductId,
 };
 use async_trait::async_trait;
 use sqlx::{pool::PoolConnection, Execute, Sqlite, SqlitePool};
@@ -62,8 +61,7 @@ impl ProductAbstructRepository for SqliteProductRepository {
     ) -> Result<CreateProductResult, Box<dyn Error>> {
         let mut conn = self.pool.acquire().await?;
         let result = ProductRepository::create(&mut conn, &product).await?;
-        let product_id = ProductId::new(&result.last_insert_rowid());
-        let create_product_result = CreateProductResult::new(product_id);
+        let create_product_result = CreateProductResult::new(result.last_insert_rowid());
 
         Ok(create_product_result)
     }
@@ -92,27 +90,20 @@ impl ProductRepository {
         product_id: &ProductId,
     ) -> Result<Option<Product>, Box<dyn Error>> {
         let row = sqlx::query_as::<_, ProductRow>("SELECT * FROM m_products WHERE id = ?")
-            .bind(product_id.value())
+            .bind(product_id)
             .fetch_optional(conn)
             .await?;
 
         match row {
             None => Ok(None),
             Some(row) => {
-                let id = ProductId::new(&row.id);
-                let name = ProductName::new(&row.name);
-                let code = ProductCode::new(&row.code);
-                let unit = ProductUnit::new(&row.unit);
-                let default_price = ProductDefaultPrice::new(&row.default_price);
-                let standard_stock_quantity =
-                    ProductStandardStockQuantity::new(&row.standard_stock_quantity);
                 let product = Product::new(
-                    id,
-                    name,
-                    code,
-                    unit,
-                    default_price,
-                    standard_stock_quantity,
+                    row.id,
+                    row.name,
+                    row.code,
+                    row.unit,
+                    row.default_price,
+                    row.standard_stock_quantity,
                     row.created_at,
                     row.updated_at,
                     row.deleted_at,
@@ -139,21 +130,13 @@ impl ProductRepository {
         let products = rows
             .into_iter()
             .map(|row| {
-                let id = ProductId::new(&row.id);
-                let name = ProductName::new(&row.name);
-                let code = ProductCode::new(&row.code);
-                let unit = ProductUnit::new(&row.unit);
-                let default_price = ProductDefaultPrice::new(&row.default_price);
-                let standard_stock_quantity =
-                    ProductStandardStockQuantity::new(&row.standard_stock_quantity);
-
                 Product::new(
-                    id,
-                    name,
-                    code,
-                    unit,
-                    default_price,
-                    standard_stock_quantity,
+                    row.id,
+                    row.name,
+                    row.code,
+                    row.unit,
+                    row.default_price,
+                    row.standard_stock_quantity,
                     row.created_at,
                     row.updated_at,
                     row.deleted_at,
@@ -177,11 +160,11 @@ impl ProductRepository {
                 standard_stock_quantity
             ) VALUES (?, ?, ?, ?, ?)",
         )
-        .bind(product.name.value())
-        .bind(product.code.value())
-        .bind(product.unit.value())
-        .bind(product.default_price.value())
-        .bind(product.standard_stock_quantity.value())
+        .bind(product.name())
+        .bind(product.code())
+        .bind(product.unit())
+        .bind(product.default_price())
+        .bind(product.standard_stock_quantity())
         .execute(conn)
         .await?;
 
@@ -198,23 +181,23 @@ impl ProductRepository {
         let mut separated = pre_query_builder.separated(", ");
         if let Some(name) = input.name() {
             separated.push("name = ");
-            separated.push_bind_unseparated(name.value());
+            separated.push_bind_unseparated(name);
         }
         if let Some(code) = input.code() {
             separated.push("code = ");
-            separated.push_bind_unseparated(code.value());
+            separated.push_bind_unseparated(code);
         }
         if let Some(unit) = input.unit() {
             separated.push("unit = ");
-            separated.push_bind_unseparated(unit.value());
+            separated.push_bind_unseparated(unit);
         }
         if let Some(default_price) = input.default_price() {
             separated.push("default_price = ");
-            separated.push_bind_unseparated(default_price.value());
+            separated.push_bind_unseparated(default_price);
         }
         if let Some(standard_stock_quantity) = input.standard_stock_quantity() {
             separated.push("standard_stock_quantity = ");
-            separated.push_bind_unseparated(standard_stock_quantity.value());
+            separated.push_bind_unseparated(standard_stock_quantity);
         }
 
         let query_without_where = pre_query_builder.build();
@@ -226,7 +209,7 @@ impl ProductRepository {
         let mut query_builder =
             query_builder::QueryBuilder::<Sqlite>::new(query_without_where.sql());
         query_builder.push(" WHERE id = ");
-        query_builder.push_bind(input.id().value());
+        query_builder.push_bind(input.id());
         let query = query_builder.build();
         let result = sqlx::query(&query.sql()).execute(conn).await?;
 
@@ -302,9 +285,8 @@ mod tests {
         );
         let result = repository.create(&input).await?;
         repository.create(&input).await?;
-        let product_id = result.product_id();
         let params = UpdateProductInput::new(
-            product_id.value(),
+            *result.product_id(),
             Some(String::from("商品1更新後")),
             Some(String::from("product001更新後")),
             Some(String::from("個更新後")),

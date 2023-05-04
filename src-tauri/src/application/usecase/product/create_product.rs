@@ -7,11 +7,11 @@ use crate::{
 use std::{error::Error, rc::Rc};
 
 pub struct CreateProductInput {
-    pub name: ProductName,
-    pub code: ProductCode,
-    pub unit: ProductUnit,
-    pub default_price: ProductDefaultPrice,
-    pub standard_stock_quantity: ProductStandardStockQuantity,
+    name: ProductName,
+    code: ProductCode,
+    unit: ProductUnit,
+    default_price: ProductDefaultPrice,
+    standard_stock_quantity: ProductStandardStockQuantity,
 }
 impl CreateProductInput {
     pub fn new(
@@ -21,23 +21,28 @@ impl CreateProductInput {
         default_price: i64,
         standard_stock_quantity: i64,
     ) -> Self {
-        let product_name = ProductName::new(&name);
-        let product_code = ProductCode::new(&code);
-        let product_unit = ProductUnit::new(&unit);
-        let product_default_price = ProductDefaultPrice::new(&default_price);
-        let product_standard_stock_quantity =
-            ProductStandardStockQuantity::new(&standard_stock_quantity);
         Self {
-            name: product_name,
-            code: product_code,
-            unit: product_unit,
-            default_price: product_default_price,
-            standard_stock_quantity: product_standard_stock_quantity,
+            name,
+            code,
+            unit,
+            default_price,
+            standard_stock_quantity,
         }
     }
-
-    pub fn get_product(&self) -> &str {
-        self.name.value()
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+    pub fn code(&self) -> &str {
+        &self.code
+    }
+    pub fn unit(&self) -> &str {
+        &self.unit
+    }
+    pub fn default_price(&self) -> &i64 {
+        &self.default_price
+    }
+    pub fn standard_stock_quantity(&self) -> &i64 {
+        &self.standard_stock_quantity
     }
 }
 

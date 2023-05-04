@@ -18,37 +18,13 @@ pub struct UpdateProductInput {
 }
 impl UpdateProductInput {
     pub fn new(
-        product_id: i64,
-        product_name: Option<String>,
-        product_code: Option<String>,
-        product_unit: Option<String>,
-        product_default_price: Option<i64>,
-        product_standard_stock_quantity: Option<i64>,
+        id: i64,
+        name: Option<String>,
+        code: Option<String>,
+        unit: Option<String>,
+        default_price: Option<i64>,
+        standard_stock_quantity: Option<i64>,
     ) -> Self {
-        let id = ProductId::new(&product_id);
-        let name = match product_name {
-            Some(name) => Some(ProductName::new(&name)),
-            None => None,
-        };
-        let code = match product_code {
-            Some(code) => Some(ProductCode::new(&code)),
-            None => None,
-        };
-        let unit = match product_unit {
-            Some(unit) => Some(ProductUnit::new(&unit)),
-            None => None,
-        };
-        let default_price = match product_default_price {
-            Some(default_price) => Some(ProductDefaultPrice::new(&default_price)),
-            None => None,
-        };
-        let standard_stock_quantity = match product_standard_stock_quantity {
-            Some(standard_stock_quantity) => {
-                Some(ProductStandardStockQuantity::new(&standard_stock_quantity))
-            }
-            None => None,
-        };
-
         Self {
             id,
             name,

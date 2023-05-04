@@ -44,7 +44,7 @@ mod tests {
     use crate::{
         adapters::gateway::product_repository::SqliteProductRepository,
         application::usecase::product::find_by_id_product::FindByIDProductUsecase,
-        domain::product::ProductId, infrastructure::database::MIGRATOR,
+        infrastructure::database::MIGRATOR,
     };
 
     #[sqlx::test(migrator = "MIGRATOR")]
@@ -74,9 +74,8 @@ mod tests {
         .execute(&mut conn)
         .await?;
 
-        let product_id = ProductId::new(&result.last_insert_rowid());
         let usecase = FindByIDProductUsecase::new(Rc::new(repository));
-        let outputs = usecase.find_by_id(&product_id).await?;
+        let outputs = usecase.find_by_id(&result.last_insert_rowid()).await?;
 
         Ok(())
     }

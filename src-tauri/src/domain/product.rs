@@ -1,95 +1,12 @@
 use serde::Serialize;
 use time::PrimitiveDateTime;
 
-#[derive(Serialize, Debug, Clone)]
-pub struct ProductId {
-    value: i64,
-}
-impl ProductId {
-    pub fn new(value: &i64) -> Self {
-        Self { value: *value }
-    }
-
-    pub fn value(&self) -> i64 {
-        self.value
-    }
-}
-
-#[derive(Serialize, Debug)]
-pub struct ProductName {
-    value: String,
-}
-impl ProductName {
-    pub fn new(value: &str) -> Self {
-        Self {
-            value: value.to_string(),
-        }
-    }
-
-    pub fn value(&self) -> &str {
-        &self.value
-    }
-}
-
-#[derive(Serialize, Debug)]
-pub struct ProductCode {
-    value: String,
-}
-impl ProductCode {
-    pub fn new(value: &str) -> Self {
-        Self {
-            value: value.to_string(),
-        }
-    }
-
-    pub fn value(&self) -> &str {
-        &self.value
-    }
-}
-
-#[derive(Serialize, Debug)]
-pub struct ProductUnit {
-    value: String,
-}
-impl ProductUnit {
-    pub fn new(value: &str) -> Self {
-        Self {
-            value: value.to_string(),
-        }
-    }
-
-    pub fn value(&self) -> &str {
-        &self.value
-    }
-}
-
-#[derive(Serialize, Debug)]
-pub struct ProductDefaultPrice {
-    value: i64,
-}
-impl ProductDefaultPrice {
-    pub fn new(value: &i64) -> Self {
-        Self { value: *value }
-    }
-
-    pub fn value(&self) -> i64 {
-        self.value
-    }
-}
-
-#[derive(Serialize, Debug)]
-pub struct ProductStandardStockQuantity {
-    value: i64,
-}
-impl ProductStandardStockQuantity {
-    pub fn new(value: &i64) -> Self {
-        Self { value: *value }
-    }
-
-    pub fn value(&self) -> i64 {
-        self.value
-    }
-}
+pub type ProductId = i64;
+pub type ProductName = String;
+pub type ProductCode = String;
+pub type ProductUnit = String;
+pub type ProductDefaultPrice = i64;
+pub type ProductStandardStockQuantity = i64;
 
 #[derive(Serialize, Debug)]
 pub struct Product {
@@ -127,30 +44,39 @@ impl Product {
             deleted_at,
         }
     }
+
     pub fn id(&self) -> &i64 {
-        &self.id.value       
+        &self.id
     }
+
     pub fn name(&self) -> &str {
-        &self.name.value
+        &self.name
     }
+
     pub fn code(&self) -> &str {
-        &self.code.value
+        &self.code
     }
+
     pub fn unit(&self) -> &str {
-        &self.unit.value
+        &self.unit
     }
+
     pub fn default_price(&self) -> &i64 {
-        &self.default_price.value
+        &self.default_price
     }
+
     pub fn standard_stock_quantity(&self) -> &i64 {
-        &self.standard_stock_quantity.value
+        &self.standard_stock_quantity
     }
+
     pub fn created_at(&self) -> &PrimitiveDateTime {
         &self.created_at
     }
+
     pub fn updated_at(&self) -> &PrimitiveDateTime {
         &self.updated_at
     }
+
     pub fn deleted_at(&self) -> &Option<PrimitiveDateTime> {
         &self.deleted_at
     }

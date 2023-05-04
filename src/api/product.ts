@@ -1,15 +1,9 @@
 import { invoke } from '@/utils/tauri'
 
 export type Product = {
-  id: {
-    value: number
-  }
-  name: {
-    value: string
-  }
-  code: {
-    value: string
-  }
+  id: number
+  name: string
+  code: string
   unit: string
   default_price: number
   standard_stock_quantity: number
@@ -26,11 +20,7 @@ type ProductSearchParameters = {
 }
 
 type FindByIdProductResponse = {
-  product: Omit<Product, 'id' | 'name' | 'code'> & {
-    id: string
-    name: string
-    code: string
-  }
+  product: Product
 }
 
 export const findByIdProduct = (productId: number) => {
@@ -52,8 +42,8 @@ export const searchProduct = (params: ProductSearchParameters) => {
 }
 
 type ProductCreateParameters = {
-  name: Product['name']['value']
-  code: Product['code']['value']
+  name: Product['name']
+  code: Product['code']
   unit: Product['unit']
   default_price: Product['default_price']
   standard_stock_quantity: Product['standard_stock_quantity']
@@ -66,9 +56,9 @@ export const createProduct = (params: ProductCreateParameters) => {
 }
 
 type ProductUpdateParameters = {
-  id: Product['id']['value']
-  name?: Product['name']['value']
-  code?: Product['code']['value']
+  id: Product['id']
+  name?: Product['name']
+  code?: Product['code']
   default_price?: Product['default_price']
   standard_stock_quantity?: Product['standard_stock_quantity']
 }
