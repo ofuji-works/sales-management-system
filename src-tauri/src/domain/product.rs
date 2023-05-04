@@ -127,4 +127,31 @@ impl Product {
             deleted_at,
         }
     }
+    pub fn id(&self) -> &i64 {
+        &self.id.value       
+    }
+    pub fn name(&self) -> &str {
+        &self.name.value
+    }
+    pub fn code(&self) -> &str {
+        &self.code.value
+    }
+    pub fn unit(&self) -> &str {
+        &self.unit.value
+    }
+    pub fn default_price(&self) -> &i64 {
+        &self.default_price.value
+    }
+    pub fn standard_stock_quantity(&self) -> &i64 {
+        &self.standard_stock_quantity.value
+    }
+    pub fn created_at(&self) -> &PrimitiveDateTime {
+        &self.created_at
+    }
+    pub fn updated_at(&self) -> &PrimitiveDateTime {
+        &self.updated_at
+    }
+    pub fn deleted_at(&self) -> &Option<PrimitiveDateTime> {
+        &self.deleted_at
+    }
 }

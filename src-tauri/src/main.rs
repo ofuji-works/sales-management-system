@@ -27,8 +27,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .manage(sqlite_pool)
         .invoke_handler(tauri::generate_handler![
-            product::create_product,
+            product::find_by_id_product,
             product::search_product,
+            product::create_product,
             product::update_product,
         ])
         .run(tauri::generate_context!())

@@ -3,27 +3,49 @@ use crate::{
         controller::{
             product_controller,
             request::product_request::{
-                CreateProductRequest, SearchProductRequest, UpdateProductRequest,
+                CreateProductRequest, SearchProductRequest, UpdateProductRequest, FindByIDProductRequest,
             },
         },
         gateway::product_repository::SqliteProductRepository,
         presenter::{
             product_presenter,
             response::product_response::{
-                CreateProductResponse, SearchProductResponse, UpdateProductResponse,
+                CreateProductResponse, SearchProductResponse, UpdateProductResponse, FindByIDProductResponse,
             },
         },
     },
-    application::usecase::{
+    application::{usecase::{
         product::create_product::CreateProductUsecase,
         product::{
-            find_by_id_product::FindByIDProductUsecase, search_product::SearchProductUsecase,
+            find_by_id_product::{FindByIDProductUsecase, self}, search_product::SearchProductUsecase,
             update_product::UpdateProductUsecase,
         },
-    },
+    }},
 };
 use sqlx::SqlitePool;
 use std::{error::Error, rc::Rc};
+
+pub(crate) async fn find_by_id(
+    pool: SqlitePool,
+    request: FindByIDProductRequest
+) -> Result<FindByIDProductResponse, Box<dyn Error>> {
+    let repository = Rc::new(SqliteProductRepository::new(pool));
+    let usecase = FindByIDProductUsecase::new(repository);
+    let output = product_controller::find_by_id(usecase, request).await?;
+
+    Ok(product_presenter::find_by_id(output))
+}
+
+#[tauri::command]
+pub(crate) fn find_by_id_product(
+    state: tauri::State<'_, SqlitePool>,
+    request: FindByIDProductRequest
+) -> Result<FindByIDProductResponse, String> {
+    let pool = state.inner().clone();
+    let result = tauri::async_runtime::block_on(find_by_id(pool, request)).map_err(|e| e.to_string())?;
+
+    Ok(result)
+}
 
 pub(crate) async fn search(
     pool: SqlitePool,

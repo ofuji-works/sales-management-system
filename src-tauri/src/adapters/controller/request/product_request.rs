@@ -1,6 +1,16 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
+pub struct FindByIDProductRequest {
+    product_id: i64
+}
+impl FindByIDProductRequest {
+    pub fn product_id(&self) -> &i64 {
+        &self.product_id
+    }
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct SearchProductRequest {
     name: Option<String>,
     code: Option<String>,
