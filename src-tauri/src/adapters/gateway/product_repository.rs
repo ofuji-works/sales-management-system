@@ -1,6 +1,6 @@
 use crate::application::{
     repository::product_repository::{
-        CreateProductResult, ProductAbstructRepository, UpdateProductResult,
+        CreateProductResult, ProductAbstructRepository, UpdateProductResult, DeleteProductResult,
     },
     usecase::product::{
         create_product::CreateProductInput, search_product::SearchProductInput,
@@ -77,8 +77,13 @@ impl ProductAbstructRepository for SqliteProductRepository {
         Ok(update_product_result)
     }
 
-    async fn delete(&self, product_id: &ProductId) -> Result<(), Box<dyn Error>> {
-        Ok(())
+    async fn delete(&self, product_id: &ProductId) -> Result<DeleteProductResult, Box<dyn Error>> {
+        let mut conn = self.pool.acquire().await?;
+        let result = ProductRepository::delete(&mut conn, product_id).await?;
+        let is_success = result.rows_affected() > 0;
+        let delete_product_result = DeleteProductResult::new(is_success);
+    
+        Ok(delete_product_result)
     }
 }
 
@@ -89,7 +94,7 @@ impl ProductRepository {
         conn: &mut PoolConnection<Sqlite>,
         product_id: &ProductId,
     ) -> Result<Option<Product>, Box<dyn Error>> {
-        let row = sqlx::query_as::<_, ProductRow>("SELECT * FROM m_products WHERE id = ?")
+        let row = sqlx::query_as::<_, ProductRow>("SELECT * FROM m_products WHERE id in (?)")
             .bind(product_id)
             .fetch_optional(conn)
             .await?;
@@ -216,8 +221,12 @@ impl ProductRepository {
         Ok(Some(result))
     }
 
-    async fn delete(&self, product_id: &ProductId) -> Result<(), Box<dyn Error>> {
-        Ok(())
+    async fn delete(conn: &mut PoolConnection<Sqlite>, product_id: &ProductId) -> Result<SqliteQueryResult, Box<dyn Error>> {
+        let result = sqlx::query("DELETE FROM m_products WHERE id = ?")
+            .bind(product_id)
+            .execute(conn).await?;
+
+        Ok(result)
     }
 }
 
@@ -232,14 +241,14 @@ mod tests {
             repository::product_repository::ProductAbstructRepository,
             usecase::product::{
                 create_product::CreateProductInput, search_product::SearchProductInput,
-                update_product::UpdateProductInput,
+                update_product::UpdateProductInput, self,
             },
         },
         infrastructure::database::MIGRATOR,
     };
 
     #[sqlx::test(migrator = "MIGRATOR")]
-    async fn search_test(pool: SqlitePool) -> Result<(), Box<dyn std::error::Error>> {
+    async fn find_by_id_test(pool: SqlitePool) {
         let repository = SqliteProductRepository::new(pool);
         let input = CreateProductInput::new(
             String::from("商品1"),
@@ -248,16 +257,41 @@ mod tests {
             2000,
             10,
         );
-        repository.create(&input).await?;
+        let result = repository.create(&input).await.unwrap();
+        repository.create(&input).await.unwrap();
+        let product_id = result.product_id();
+        let product = repository.find_by_id(&product_id).await.unwrap();
+
+        match product {
+            Some(product) => {
+                assert_eq!(product.code().to_string(), String::from("product001"));
+            }
+            None => {
+                panic!();
+            }
+        }
+    }
+
+    #[sqlx::test(migrator = "MIGRATOR")]
+    async fn search_test(pool: SqlitePool) {
+        let repository = SqliteProductRepository::new(pool);
+        let input = CreateProductInput::new(
+            String::from("商品1"),
+            String::from("product001"),
+            String::from("個"),
+            2000,
+            10,
+        );
+        repository.create(&input).await.unwrap();
         let product_name = String::from("商品1");
         let input = SearchProductInput::new(None, None, Some(product_name), None);
-        let products = repository.search(&input).await?;
+        let products = repository.search(&input).await.unwrap();
 
-        Ok(())
+        assert_eq!(products[0].code().to_string(), String::from("product001"));
     }
 
     #[sqlx::test(migrator = "MIGRATOR")]
-    async fn create_test(pool: SqlitePool) -> Result<(), Box<dyn std::error::Error>> {
+    async fn create_test(pool: SqlitePool) {
         let input = CreateProductInput::new(
             String::from("商品1"),
             String::from("product001"),
@@ -265,16 +299,14 @@ mod tests {
             2000,
             10,
         );
-        let mut conn = pool.acquire().await?;
-        let result = ProductRepository::create(&mut conn, &input).await?;
+        let mut conn = pool.acquire().await.unwrap();
+        let result = ProductRepository::create(&mut conn, &input).await.unwrap();
 
         assert_eq!(result.rows_affected(), 1);
-
-        Ok(())
     }
 
     #[sqlx::test(migrator = "MIGRATOR")]
-    async fn update_test(pool: SqlitePool) -> Result<(), Box<dyn std::error::Error>> {
+    async fn update_test(pool: SqlitePool) {
         let repository = SqliteProductRepository::new(pool);
         let input = CreateProductInput::new(
             String::from("商品1"),
@@ -283,26 +315,23 @@ mod tests {
             2000,
             10,
         );
-        let result = repository.create(&input).await?;
-        repository.create(&input).await?;
+        let create_product_result = repository.create(&input).await.unwrap();
+        repository.create(&input).await.unwrap();
         let params = UpdateProductInput::new(
-            *result.product_id(),
+            *create_product_result.product_id(),
             Some(String::from("商品1更新後")),
             Some(String::from("product001更新後")),
             Some(String::from("個更新後")),
             None,
             None,
-            // None,
-            // None,
-            // None,
         );
-        let result = repository.update(&params).await?;
+        let update_product_result = repository.update(&params).await.unwrap();
 
-        Ok(())
+        assert_eq!(update_product_result.product_id(), create_product_result.product_id());
     }
 
     #[sqlx::test(migrator = "MIGRATOR")]
-    async fn find_by_id_test(pool: SqlitePool) -> Result<(), Box<dyn std::error::Error>> {
+    async fn delete(pool: SqlitePool) {
         let repository = SqliteProductRepository::new(pool);
         let input = CreateProductInput::new(
             String::from("商品1"),
@@ -311,11 +340,10 @@ mod tests {
             2000,
             10,
         );
-        let result = repository.create(&input).await?;
-        repository.create(&input).await?;
+        let result = repository.create(&input).await.unwrap();
         let product_id = result.product_id();
-        let product = repository.find_by_id(&product_id).await?;
+        let result = repository.delete(&product_id).await.unwrap();
 
-        Ok(())
+        assert_eq!(*result.result(), true);
     }
 }

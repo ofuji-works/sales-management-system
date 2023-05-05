@@ -32,6 +32,21 @@ impl UpdateProductResult {
     }
 }
 
+#[derive(Debug)]
+pub struct DeleteProductResult {
+    result: bool
+}
+impl DeleteProductResult {
+    pub fn new(result: bool) -> Self {
+        Self {
+            result
+        }
+    }
+    pub fn result(&self) -> &bool {
+        &self.result
+    }
+}
+
 #[async_trait::async_trait]
 pub trait ProductAbstructRepository {
     async fn find_by_id(&self, id: &ProductId) -> Result<Option<Product>, Box<dyn Error>>;
@@ -44,5 +59,5 @@ pub trait ProductAbstructRepository {
         &self,
         input: &UpdateProductInput,
     ) -> Result<UpdateProductResult, Box<dyn Error>>;
-    async fn delete(&self, product_id: &ProductId) -> Result<(), Box<dyn Error>>;
+    async fn delete(&self, product_id: &ProductId) -> Result<DeleteProductResult, Box<dyn Error>>;
 }
