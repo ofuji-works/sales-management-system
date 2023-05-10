@@ -1,18 +1,21 @@
+import { type NextPage } from 'next'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import React from 'react'
 
-import { searchProduct, type Product } from '@/api/product'
+import { deleteProduct, searchProduct, type Product } from '@/api/product'
+import { setModalContextProvider } from '@/providers'
 
 const initialPageMetaData = {
   limit: 10,
   offset: 0,
 }
 
-const Page = () => {
-  const [loading, setLoading] = useState<boolean>(false)
-  const [products, setProducts] = useState<Product[]>([])
+const Page: NextPage = () => {
+  const [loading, setLoading] = React.useState<boolean>(false)
+  const [products, setProducts] = React.useState<Product[]>([])
+  const modal = React.useContext(setModalContextProvider)
 
-  useEffect(() => {
+  React.useEffect(() => {
     setLoading(true)
     searchProduct(initialPageMetaData)
       .then((response) => {
@@ -23,8 +26,22 @@ const Page = () => {
       })
   }, [])
 
+  const openDeleteModal = (productId: Product['id']) => {
+    const deleteHandler = () => {
+      deleteProduct({ product_id: productId })
+    }
+
+    console.debug(modal)
+
+    modal?.openModal(
+      <div>
+        <button onClick={deleteHandler}></button>
+      </div>,
+    )
+  }
+
   if (loading) {
-    return 'now loading ...'
+    return <p>now loading ...</p>
   }
 
   return (
@@ -38,6 +55,7 @@ const Page = () => {
               <li key={product.code}>
                 {product.name}
                 <Link href={`/product/${product.id}`}>product</Link>
+                <button onClick={() => openDeleteModal(product.id)}>削除</button>
               </li>
             )
           })}

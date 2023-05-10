@@ -68,3 +68,13 @@ export const updateProduct = (params: ProductUpdateParameters) => {
     request: params,
   })
 }
+
+type ProductDeleteParameters = {
+  product_id: Product['id']
+}
+
+export const deleteProduct = (params: ProductDeleteParameters) => {
+  return invoke('delete_product', {
+    request: params,
+  })
+}

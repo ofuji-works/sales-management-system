@@ -1,17 +1,19 @@
 import { type NextPage } from 'next'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import React from 'react'
 
-import { Product, findByIdProduct } from '@/api/product'
+import { Product, deleteProduct, findByIdProduct } from '@/api/product'
 import { isPageParameters } from '@/features/product'
+import { setModalContextProvider } from '@/providers'
 
 const Page: NextPage = () => {
   const router = useRouter()
-  const [loading, setLoading] = useState<boolean>(false)
-  const [product, setProduct] = useState<Product>()
+  const [loading, setLoading] = React.useState<boolean>(false)
+  const [product, setProduct] = React.useState<Product>()
+  const modal = React.useContext(setModalContextProvider)
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (isPageParameters(router.query)) {
       const id = parseInt(router.query.id, 10)
       setLoading(true)
@@ -25,6 +27,22 @@ const Page: NextPage = () => {
     }
   }, [])
 
+  const openDeleteModal = () => {
+    if (product) {
+      const deleteHandler = () => {
+        deleteProduct({ product_id: product.id }).then(() => {
+          router.push('/product')
+        })
+      }
+
+      modal?.openModal(
+        <div>
+          <button onClick={deleteHandler}></button>
+        </div>,
+      )
+    }
+  }
+
   if (loading) {
     return <p>now loading ...</p>
   }
@@ -33,6 +51,7 @@ const Page: NextPage = () => {
     <div>
       <Link href="/product">一覧に戻る</Link>
       <Link href={`/product/${router.query.id}/edit`}>編集する</Link>
+      <button onClick={openDeleteModal}>削除する</button>
       <dl>
         <dt>商品名</dt>
         <dd>{product?.name}</dd>
