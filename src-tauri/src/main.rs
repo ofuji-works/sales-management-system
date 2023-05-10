@@ -31,6 +31,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             product::search_product,
             product::create_product,
             product::update_product,
+            product::delete_product,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

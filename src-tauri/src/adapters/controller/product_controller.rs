@@ -1,5 +1,6 @@
 use crate::adapters::controller::request::product_request::CreateProductRequest;
 use crate::application::usecase::product::create_product::CreateProductOutput;
+use crate::application::usecase::product::delete_product::{DeleteProductOutput, DeleteProductUsecase};
 use crate::application::usecase::product::find_by_id_product::{FindByIDProductUsecase, FindByIDProductOutput};
 use crate::application::usecase::product::update_product::{
     UpdateProductInput, UpdateProductOutput, UpdateProductUsecase,
@@ -11,7 +12,7 @@ use crate::application::usecase::product::{
 use std::error::Error;
 use std::rc::Rc;
 
-use super::request::product_request::{SearchProductRequest, UpdateProductRequest, FindByIDProductRequest};
+use super::request::product_request::{SearchProductRequest, UpdateProductRequest, FindByIDProductRequest, DeleteProductRequest};
 
 pub(crate) async fn find_by_id (usecase: FindByIDProductUsecase, request: FindByIDProductRequest) -> Result<FindByIDProductOutput, Box<dyn Error>> {
     let output = usecase.find_by_id(request.product_id()).await?;
@@ -63,6 +64,12 @@ pub(crate) async fn update_product(
         request.standard_stock_quantity,
     );
     let output = usecase.update(input).await?;
+
+    Ok(output)
+}
+
+pub(crate) async fn delete_product(usecase: DeleteProductUsecase, request: DeleteProductRequest) -> Result<DeleteProductOutput, Rc<dyn Error>> {
+    let output = usecase.delete(request.product_id()).await?;
 
     Ok(output)
 }

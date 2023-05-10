@@ -2,7 +2,7 @@ use serde::Serialize;
 use time::PrimitiveDateTime;
 
 use crate::{
-    application::usecase::product::search_product::SearchProductOutput, domain::product::Product,
+    application::usecase::product::{search_product::SearchProductOutput}, domain::product::Product,
 };
 
 #[derive(Serialize)]
@@ -80,5 +80,15 @@ pub struct UpdateProductResponse {
 impl UpdateProductResponse {
     pub fn new(product: Option<Product>) -> Self {
         Self { product }
+    }
+}
+
+#[derive(Serialize)]
+pub struct DeleteProductResponse {
+    result: bool
+}
+impl DeleteProductResponse {
+    pub fn new(result: bool) -> Self {
+        Self { result }
     }
 }

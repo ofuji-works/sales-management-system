@@ -1,13 +1,13 @@
 use crate::{
     application::usecase::product::{
         create_product::CreateProductOutput, search_product::SearchProductOutput,
-        update_product::UpdateProductOutput, find_by_id_product::FindByIDProductOutput,
+        update_product::UpdateProductOutput, find_by_id_product::FindByIDProductOutput, delete_product::DeleteProductOutput,
     },
     domain::product::Product,
 };
 
 use super::response::product_response::{
-    CreateProductResponse, SearchProductResponse, UpdateProductResponse, FindByIDProductResponse, ProductForResponse,
+    CreateProductResponse, SearchProductResponse, UpdateProductResponse, FindByIDProductResponse, ProductForResponse, DeleteProductResponse,
 };
 
 pub(crate) fn find_by_id(output: FindByIDProductOutput) -> FindByIDProductResponse {
@@ -46,4 +46,8 @@ pub(crate) fn update_product(
     product: Option<Product>,
 ) -> UpdateProductResponse {
     UpdateProductResponse::new(product)
+}
+
+pub(crate) fn delete_product(result: bool) -> DeleteProductResponse {
+    DeleteProductResponse::new(result)
 }

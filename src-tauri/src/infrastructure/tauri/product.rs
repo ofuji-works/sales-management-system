@@ -3,14 +3,14 @@ use crate::{
         controller::{
             product_controller,
             request::product_request::{
-                CreateProductRequest, SearchProductRequest, UpdateProductRequest, FindByIDProductRequest,
+                CreateProductRequest, SearchProductRequest, UpdateProductRequest, FindByIDProductRequest, DeleteProductRequest,
             },
         },
         gateway::product_repository::SqliteProductRepository,
         presenter::{
             product_presenter,
             response::product_response::{
-                CreateProductResponse, SearchProductResponse, UpdateProductResponse, FindByIDProductResponse,
+                CreateProductResponse, SearchProductResponse, UpdateProductResponse, FindByIDProductResponse, DeleteProductResponse,
             },
         },
     },
@@ -18,14 +18,14 @@ use crate::{
         product::create_product::CreateProductUsecase,
         product::{
             find_by_id_product::{FindByIDProductUsecase, self}, search_product::SearchProductUsecase,
-            update_product::UpdateProductUsecase,
+            update_product::UpdateProductUsecase, delete_product::DeleteProductUsecase, self,
         },
     }},
 };
 use sqlx::SqlitePool;
 use std::{error::Error, rc::Rc};
 
-pub(crate) async fn find_by_id(
+async fn find_by_id(
     pool: SqlitePool,
     request: FindByIDProductRequest
 ) -> Result<FindByIDProductResponse, Box<dyn Error>> {
@@ -47,7 +47,7 @@ pub(crate) fn find_by_id_product(
     Ok(result)
 }
 
-pub(crate) async fn search(
+async fn search(
     pool: SqlitePool,
     request: SearchProductRequest,
 ) -> Result<SearchProductResponse, Box<dyn Error>> {
@@ -70,7 +70,7 @@ pub(crate) fn search_product(
     Ok(result)
 }
 
-pub(crate) async fn create(
+async fn create(
     pool: SqlitePool,
     request: CreateProductRequest,
 ) -> Result<CreateProductResponse, Rc<dyn Error>> {
@@ -98,7 +98,7 @@ pub(crate) fn create_product(
     result
 }
 
-pub(crate) async fn update(
+async fn update(
     pool: SqlitePool,
     request: UpdateProductRequest,
 ) -> Result<UpdateProductResponse, Rc<dyn Error>> {
@@ -122,6 +122,32 @@ pub(crate) fn update_product(
 ) -> Result<UpdateProductResponse, String> {
     let pool = state.inner().clone();
     let result = tauri::async_runtime::block_on(update(pool, request)).map_err(|e| e.to_string());
+
+    result
+}
+
+async fn delete(pool: SqlitePool, request: DeleteProductRequest) -> Result<DeleteProductResponse, Rc<dyn Error>> {
+    let repository = Rc::new(SqliteProductRepository::new(pool));
+    let find_by_id_product_usecase = FindByIDProductUsecase::new(repository.clone());
+    let product = find_by_id_product_usecase.find_by_id(request.product_id()).await?.product;
+    match product {
+        Some(_product) => {
+            let delete_product_usecase = DeleteProductUsecase::new(repository.clone());
+            let output = product_controller::delete_product(delete_product_usecase, request).await?;
+
+            Ok(product_presenter::delete_product(*output.result()))
+        }
+        None => {
+            Ok(product_presenter::delete_product(false))
+        }
+    }
+
+}
+
+#[tauri::command]
+pub(crate) fn delete_product(state: tauri::State<'_, SqlitePool>, request: DeleteProductRequest) -> Result<DeleteProductResponse, String> {
+    let pool = state.inner().clone();
+    let result = tauri::async_runtime::block_on(delete(pool, request)).map_err(|e| e.to_string());
 
     result
 }

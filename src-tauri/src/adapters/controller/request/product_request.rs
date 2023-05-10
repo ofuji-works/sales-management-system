@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::domain::product::ProductId;
+
 #[derive(Serialize, Deserialize)]
 pub struct FindByIDProductRequest {
     product_id: i64
@@ -52,4 +54,15 @@ pub struct UpdateProductRequest {
     pub unit: Option<String>,
     pub default_price: Option<i64>,
     pub standard_stock_quantity: Option<i64>,
+}
+
+
+#[derive(Serialize, Deserialize)]
+pub struct DeleteProductRequest {
+    product_id: ProductId
+}
+impl DeleteProductRequest {
+    pub fn product_id(&self) -> &i64 {
+        &self.product_id
+    }
 }
