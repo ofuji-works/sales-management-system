@@ -101,11 +101,11 @@ mod tests {
         infrastructure::database::MIGRATOR,
     };
     use sqlx::SqlitePool;
-    use std::{error::Error, rc::Rc};
+    use std::rc::Rc;
 
     #[sqlx::test(migrator = "MIGRATOR")]
-    async fn update_test(pool: SqlitePool) -> Result<(), Box<dyn Error>> {
-        let mut conn = pool.acquire().await?;
+    async fn update_test(pool: SqlitePool) {
+        let mut conn = pool.acquire().await.unwrap();
         let repository = Rc::new(SqliteProductRepository::new(pool));
         let usecase = UpdateProductUsecase::new(repository.clone());
 
@@ -127,7 +127,7 @@ mod tests {
             )",
         )
         .execute(&mut conn)
-        .await?;
+        .await.unwrap();
 
         let input = UpdateProductInput::new(
             1,
@@ -138,8 +138,8 @@ mod tests {
             None,
         );
 
-        let result = usecase.update(input).await?;
+        let result = usecase.update(input).await.unwrap();
 
-        Ok(())
+        assert_eq!(*result.result.product_id(), 1);
     }
 }

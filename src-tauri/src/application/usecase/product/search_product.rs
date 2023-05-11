@@ -94,8 +94,8 @@ mod tests {
     };
 
     #[sqlx::test(migrator = "MIGRATOR")]
-    async fn search_test(pool: SqlitePool) -> Result<(), Box<dyn std::error::Error>> {
-        let mut conn = pool.acquire().await?;
+    async fn search_test(pool: SqlitePool) {
+        let mut conn = pool.acquire().await.unwrap();
         let repository = SqliteProductRepository::new(pool);
         sqlx::query(
             "INSERT INTO
@@ -115,7 +115,7 @@ mod tests {
             )",
         )
         .execute(&mut conn)
-        .await?;
+        .await.unwrap();
 
         let usecase = SearchProductUsecase::new(Rc::new(repository));
 
@@ -125,7 +125,8 @@ mod tests {
         let code: Option<String> = None;
 
         let input = SearchProductInput::new(offset, limit, name, code);
-        let outputs = usecase.search(input).await?;
-        Ok(())
+        let outputs = usecase.search(input).await.unwrap();
+
+        assert_eq!(outputs.products.len(), 1);
     }
 }

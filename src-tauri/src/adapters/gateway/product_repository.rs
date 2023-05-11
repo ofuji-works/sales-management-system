@@ -71,7 +71,7 @@ impl ProductAbstructRepository for SqliteProductRepository {
         input: &UpdateProductInput,
     ) -> Result<UpdateProductResult, Box<dyn Error>> {
         let mut conn = self.pool.acquire().await?;
-        let result = ProductRepository::update(&mut conn, input).await?;
+        ProductRepository::update(&mut conn, input).await?;
         let update_product_result = UpdateProductResult::new(input.id().clone());
 
         Ok(update_product_result)

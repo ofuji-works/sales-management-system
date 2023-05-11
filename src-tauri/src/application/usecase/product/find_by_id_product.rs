@@ -48,8 +48,8 @@ mod tests {
     };
 
     #[sqlx::test(migrator = "MIGRATOR")]
-    async fn find_by_id_test(pool: SqlitePool) -> Result<(), Box<dyn std::error::Error>> {
-        let mut conn = pool.acquire().await?;
+    async fn find_by_id_test(pool: SqlitePool) {
+        let mut conn = pool.acquire().await.unwrap();
         let repository = SqliteProductRepository::new(pool);
 
         let result = sqlx::query(
@@ -72,11 +72,11 @@ mod tests {
             )",
         )
         .execute(&mut conn)
-        .await?;
+        .await.unwrap();
 
         let usecase = FindByIDProductUsecase::new(Rc::new(repository));
-        let outputs = usecase.find_by_id(&result.last_insert_rowid()).await?;
+        let outputs = usecase.find_by_id(&result.last_insert_rowid()).await.unwrap();
 
-        Ok(())
+        assert_eq!(outputs.product.is_some(), true);
     }
 }
