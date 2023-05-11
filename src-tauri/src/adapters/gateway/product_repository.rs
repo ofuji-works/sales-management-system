@@ -240,8 +240,9 @@ mod tests {
         application::{
             repository::product_repository::ProductAbstructRepository,
             usecase::product::{
-                create_product::CreateProductInput, search_product::SearchProductInput,
-                update_product::UpdateProductInput, self,
+                create_product::CreateProductInput,
+                search_product::SearchProductInput,
+                update_product::UpdateProductInput,
             },
         },
         infrastructure::database::MIGRATOR,

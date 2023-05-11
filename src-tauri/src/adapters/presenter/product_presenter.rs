@@ -1,7 +1,7 @@
 use crate::{
     application::usecase::product::{
         create_product::CreateProductOutput, search_product::SearchProductOutput,
-        update_product::UpdateProductOutput, find_by_id_product::FindByIDProductOutput, delete_product::DeleteProductOutput,
+        update_product::UpdateProductOutput, find_by_id_product::FindByIDProductOutput, 
     },
     domain::product::Product,
 };
