@@ -17,8 +17,8 @@ use crate::{
     application::{usecase::{
         product::create_product::CreateProductUsecase,
         product::{
-            find_by_id_product::{FindByIDProductUsecase, self}, search_product::SearchProductUsecase,
-            update_product::UpdateProductUsecase, delete_product::DeleteProductUsecase, self,
+            find_by_id_product::{FindByIDProductUsecase}, search_product::SearchProductUsecase,
+            update_product::UpdateProductUsecase, delete_product::DeleteProductUsecase,
         },
     }},
 };
