@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "test:rust": "cd src-tauri && cargo test -- --nocapture",
+    "make:migrations": "cd src-tauri && sqlx migrate add --source database/migrations",
     "export": "next export",
     "start": "next start",
     "tauri": "tauri",
