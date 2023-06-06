@@ -1,8 +1,8 @@
 use std::error::Error;
-use sqlx::{pool::PoolConnection, Sqlite, SqlitePool, sqlite::SqliteQueryResult};
+use sqlx::{pool::PoolConnection, Sqlite, SqlitePool, sqlite::SqliteQueryResult, Execute};
 use time::PrimitiveDateTime;
 
-use crate::{application::{repository::customer_repository::{CustomerAbstructRepository, CreateCustomerResult}, usecase::{customer::create_customer::CreateCustomerInput}}, domain::customer::{Customer, Id}};
+use crate::{application::{repository::customer_repository::{CustomerAbstructRepository, CreateCustomerResult, UpdateCustomerResult}, usecase::{customer::{create_customer::CreateCustomerInput, update_customer::UpdateCustomerInput}}}, domain::customer::{Customer, Id}};
 
 #[derive(sqlx::FromRow)]
 pub struct CustomerRow {
@@ -18,9 +18,8 @@ pub struct CustomerRow {
 pub struct SqliteCustomerRespository {
     pool: SqlitePool,
 }
-
-impl SqliteCustomerRespository {
-    pub fn new(pool: SqlitePool) -> Self {
+impl From<SqlitePool> for SqliteCustomerRespository {
+    fn from(pool: SqlitePool) -> Self {
         Self { pool }
     }
 }
@@ -39,13 +38,20 @@ impl CustomerAbstructRepository for SqliteCustomerRespository {
         let mut conn = self.pool.acquire().await?;
         let result = CustomerRepository::create(&mut conn, input).await?;
 
-        Ok(CreateCustomerResult::new(result.last_insert_rowid()))
+        Ok(CreateCustomerResult::from(result.last_insert_rowid()))
+    }
+
+    async fn update(&self, input: UpdateCustomerInput) -> Result<UpdateCustomerResult, Box<dyn Error>> {
+        let mut conn = self.pool.acquire().await?;
+        CustomerRepository::update(&mut conn, &input).await?;
+
+        Ok(UpdateCustomerResult::from(input.id()))
     }
 }
 
 pub struct CustomerRepository {}
 impl CustomerRepository {
-    async fn find_by_id(conn: &mut PoolConnection<Sqlite>,id: &Id) -> Result<Option<Customer>, Box<dyn Error>> {
+    async fn find_by_id(conn: &mut PoolConnection<Sqlite>, id: &Id) -> Result<Option<Customer>, Box<dyn Error>> {
         let result = sqlx::query_as::<Sqlite, CustomerRow>("SELECT * FROM m_customers WHERE id = ?").bind(id).fetch_optional(conn).await?;
 
         match result {
@@ -65,6 +71,40 @@ impl CustomerRepository {
 
         Ok(result)
     }
+
+    async fn update(conn: &mut PoolConnection<Sqlite>, input: &UpdateCustomerInput) -> Result<Option<SqliteQueryResult>, Box<dyn Error>> {
+        let mut pre_query_builder = sqlx::query_builder::QueryBuilder::<Sqlite>::new("UPDATE m_customers SET");
+
+        let mut separated = pre_query_builder.separated(",");
+        if let Some(name) = input.name() {
+            separated.push("name = ");
+            separated.push_bind_unseparated(name);
+        }
+
+        if let Some(postal) = input.postal() {
+            separated.push("postal = ");
+            separated.push_bind_unseparated(postal);
+        }
+
+        if let Some(address) = input.address() {
+            separated.push("address = ");
+            separated.push_bind_unseparated(address);
+        }
+
+        let query_without_where = pre_query_builder.build();
+        if query_without_where.sql().ends_with("= ?") {
+            return Ok(None);
+        }
+
+        let mut query_builder = sqlx::query_builder::QueryBuilder::<Sqlite>::new(query_without_where.sql());
+        query_builder.push(" WHERE id = ");
+        query_builder.push_bind(input.id());
+
+        let query = query_builder.build();
+        let result = sqlx::query(query.sql()).execute(conn).await?;
+
+        Ok(Some(result))
+    }
 }
 
 #[cfg(test)]
@@ -76,7 +116,7 @@ mod tests {
 
     #[sqlx::test(migrator = "MIGRATOR")]
     async fn find_by_id_test(pool: SqlitePool)  {
-        let repository = SqliteCustomerRespository::new(pool);
+        let repository = SqliteCustomerRespository::from(pool);
         let input = CreateCustomerInput::new(String::from("sample.inc"), 1234567, String::from("東京都"));
         let result = repository.create(input).await.unwrap();
 
@@ -85,7 +125,7 @@ mod tests {
 
     #[sqlx::test(migrator = "MIGRATOR")]
     async fn create_test(pool: SqlitePool)  {
-        let repository = SqliteCustomerRespository::new(pool);
+        let repository = SqliteCustomerRespository::from(pool);
         let input = CreateCustomerInput::new(String::from("sample.inc"), 1234567, String::from("東京都"));
         let result = repository.create(input).await.unwrap();
         let product = repository.find_by_id(result.customer_id()).await.unwrap();
