@@ -120,7 +120,7 @@ mod tests {
         let input = CreateCustomerInput::new(String::from("sample.inc"), 1234567, String::from("東京都"));
         let result = repository.create(input).await.unwrap();
 
-        assert_eq!(*result.customer_id(), 1);
+        assert_eq!(result.customer_id(), 1);
     }
 
     #[sqlx::test(migrator = "MIGRATOR")]
@@ -128,7 +128,7 @@ mod tests {
         let repository = SqliteCustomerRespository::from(pool);
         let input = CreateCustomerInput::new(String::from("sample.inc"), 1234567, String::from("東京都"));
         let result = repository.create(input).await.unwrap();
-        let product = repository.find_by_id(result.customer_id()).await.unwrap();
+        let product = repository.find_by_id(&result.customer_id()).await.unwrap();
 
         assert_eq!(product.is_some(), true);
     }

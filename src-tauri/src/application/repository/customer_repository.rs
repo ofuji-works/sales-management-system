@@ -11,8 +11,8 @@ impl From<Id> for CreateCustomerResult {
     }
 }
 impl CreateCustomerResult {
-    pub fn customer_id(&self) -> &Id {
-        &self.customer_id
+    pub fn customer_id(&self) -> Id {
+        self.customer_id
     }
 }
 
@@ -25,8 +25,8 @@ impl From<Id> for UpdateCustomerResult {
     }
 }
 impl UpdateCustomerResult {
-    pub fn customer_id(&self) -> &Id {
-        &self.customer_id
+    pub fn customer_id(&self) -> Id {
+        self.customer_id
     } 
 }
 

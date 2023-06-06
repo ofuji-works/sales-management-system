@@ -1,4 +1,8 @@
-use crate::domain::customer::{Name, Postal, Address};
+use std::error::Error;
+use std::rc::Rc;
+
+use crate::domain::customer::{Name, Postal, Address, Id};
+use crate::application::repository::customer_repository::{ CustomerAbstructRepository, CreateCustomerResult};
 
 pub struct CreateCustomerInput {
     name: Name,
@@ -20,5 +24,31 @@ impl CreateCustomerInput {
 
     pub fn address(&self) -> &Address {
         &self.address
+    }
+}
+
+pub struct CreateCustomerOutput {
+    customer_id: Id
+}
+impl From<CreateCustomerResult> for CreateCustomerOutput {
+    fn from(result: CreateCustomerResult) -> Self {
+        Self { customer_id: result.customer_id() }
+    }
+}
+
+
+pub struct CreateCustomerUsecase {
+    repository: Rc<dyn CustomerAbstructRepository>
+}
+impl From<Rc<dyn CustomerAbstructRepository>> for CreateCustomerUsecase {
+    fn from(repository: Rc<dyn CustomerAbstructRepository>) -> Self {
+        Self { repository }
+    }
+}
+impl CreateCustomerUsecase {
+    async fn create(&self, input: CreateCustomerInput) -> Result<CreateCustomerOutput, Rc<dyn Error>> {
+        let result = self.repository.create(input).await?;
+
+        Ok(CreateCustomerOutput::from(result))
     }
 }
