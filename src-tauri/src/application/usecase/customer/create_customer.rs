@@ -46,7 +46,7 @@ impl From<Rc<dyn CustomerAbstructRepository>> for CreateCustomerUsecase {
     }
 }
 impl CreateCustomerUsecase {
-    async fn create(&self, input: CreateCustomerInput) -> Result<CreateCustomerOutput, Rc<dyn Error>> {
+    pub async fn create(&self, input: CreateCustomerInput) -> Result<CreateCustomerOutput, Rc<dyn Error>> {
         let result = self.repository.create(input).await?;
 
         Ok(CreateCustomerOutput::from(result))

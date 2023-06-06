@@ -21,8 +21,8 @@ impl UpdateCustomerInput {
         &self.name
     }
 
-    pub fn postal(&self) -> &Option<Postal> {
-        &self.postal
+    pub fn postal(&self) -> Option<Postal> {
+        self.postal
     }
 
     pub fn address(&self) -> &Option<Address> {
@@ -48,7 +48,7 @@ impl From<Rc<dyn CustomerAbstructRepository>> for UpdateCustomerUsecase {
     }
 }
 impl UpdateCustomerUsecase {
-    async fn update(&self, input: UpdateCustomerInput) -> Result<UpdateCustomerOutput, Rc<dyn Error>> {
+    pub async fn update(&self, input: UpdateCustomerInput) -> Result<UpdateCustomerOutput, Rc<dyn Error>> {
         let result = self.repository.update(input).await?;
 
         Ok(UpdateCustomerOutput::from(result))
