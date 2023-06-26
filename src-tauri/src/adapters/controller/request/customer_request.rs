@@ -22,6 +22,7 @@ impl CreateCustomerRequest {
     }
 }
 
+#[derive(Deserialize, Serialize)]
 pub struct UpdateCustomerRequest {
     id: Id,
     name: Option<Name>,

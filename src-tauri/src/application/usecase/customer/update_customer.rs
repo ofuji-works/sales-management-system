@@ -38,12 +38,17 @@ impl From<UpdateCustomerResult> for UpdateCustomerOutput {
         Self { customer_id: result.customer_id() }
     }
 }
+impl UpdateCustomerOutput {
+    pub fn customer_id(&self) -> i64 {
+        self.customer_id
+    }
+}
 
 pub struct UpdateCustomerUsecase {
     repository: Rc<dyn CustomerAbstructRepository>
 }
-impl From<Rc<dyn CustomerAbstructRepository>> for UpdateCustomerUsecase {
-    fn from(repository: Rc<dyn CustomerAbstructRepository>) -> Self {
+impl UpdateCustomerUsecase {
+    pub fn new(repository: Rc<dyn CustomerAbstructRepository>) -> Self {
         Self { repository }
     }
 }

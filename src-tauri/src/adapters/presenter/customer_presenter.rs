@@ -5,6 +5,6 @@ pub(crate) fn create_customer(customer: Customer) -> CreateCustomerResponse {
     CreateCustomerResponse::from(customer)
 }
 
-pub(crate) fn update_customer(customer: Customer) -> UpdateCustomerResponse {
+pub(crate) fn update_customer(customer: Option<Customer>) -> UpdateCustomerResponse {
     UpdateCustomerResponse::from(customer)
 }

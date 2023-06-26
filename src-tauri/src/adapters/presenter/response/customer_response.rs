@@ -1,8 +1,8 @@
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
 use crate::{domain::customer::Customer};
 
-#[derive(Deserialize, Serialize)]
+#[derive(Serialize)]
 pub struct CreateCustomerResponse {
     customer: Customer
 }
@@ -11,22 +11,14 @@ impl From<Customer> for CreateCustomerResponse {
         Self { customer }
     }
 }
-impl CreateCustomerResponse {
-    pub fn customer(&self) -> &Customer {
-        &self.customer
-    }
-}
 
+#[derive(Serialize)]
 pub struct UpdateCustomerResponse {
-    customer: Customer
+    customer: Option<Customer>
 }
-impl From<Customer> for UpdateCustomerResponse { 
-    fn from(customer: Customer) -> Self {
+impl From<Option<Customer>> for UpdateCustomerResponse { 
+    fn from(customer: Option<Customer>) -> Self {
         Self { customer }
     }
 }
-impl UpdateCustomerResponse {
-    pub fn customer(&self) -> &Customer {
-        &self.customer
-    }
-}
+
