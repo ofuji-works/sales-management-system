@@ -18,6 +18,11 @@ pub struct CustomerRow {
 pub struct SqliteCustomerRespository {
     pool: SqlitePool,
 }
+impl SqliteCustomerRespository {
+    pub fn new (pool: SqlitePool) -> Self {
+        Self { pool }
+    }
+}
 impl From<SqlitePool> for SqliteCustomerRespository {
     fn from(pool: SqlitePool) -> Self {
         Self { pool }
@@ -132,4 +137,4 @@ mod tests {
 
         assert_eq!(product.is_some(), true);
     }
-}
+}   

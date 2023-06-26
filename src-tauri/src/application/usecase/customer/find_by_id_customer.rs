@@ -6,8 +6,8 @@ use crate::{application::repository::customer_repository::CustomerAbstructReposi
 pub struct FindByIDCustomerUsecase {
     repository: Rc<dyn CustomerAbstructRepository>
 }
-impl From<Rc<dyn CustomerAbstructRepository>> for FindByIDCustomerUsecase {
-    fn from(repository: Rc<dyn CustomerAbstructRepository>) -> Self {
+impl FindByIDCustomerUsecase {
+    pub fn new (repository: Rc<dyn CustomerAbstructRepository>) -> Self {
         Self { repository }
     }
 }

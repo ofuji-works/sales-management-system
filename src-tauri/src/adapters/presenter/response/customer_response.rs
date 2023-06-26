@@ -1,5 +1,8 @@
+use serde::{Deserialize, Serialize};
+
 use crate::{domain::customer::Customer};
 
+#[derive(Deserialize, Serialize)]
 pub struct CreateCustomerResponse {
     customer: Customer
 }

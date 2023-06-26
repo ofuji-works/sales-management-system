@@ -8,6 +8,7 @@ pub mod application;
 pub mod domain;
 pub mod infrastructure;
 
+use infrastructure::tauri::customer;
 use tauri::Manager;
 
 use crate::infrastructure::{database, tauri::product};
@@ -32,6 +33,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             product::create_product,
             product::update_product,
             product::delete_product,
+            customer::create_customer,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

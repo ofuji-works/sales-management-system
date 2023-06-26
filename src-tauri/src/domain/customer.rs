@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 use time::PrimitiveDateTime;
 
 pub type Id = i64;
@@ -6,7 +6,7 @@ pub type Name = String;
 pub type Postal = i64;
 pub type Address = String;
 
-#[derive(Serialize, Debug)]
+#[derive(Deserialize ,Serialize, Debug)]
 pub struct Customer {
     id: Id,
     name: Name,

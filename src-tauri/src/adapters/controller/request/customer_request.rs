@@ -1,5 +1,8 @@
+use serde::{Deserialize, Serialize};
+
 use crate::domain::customer::{Postal, Id, Name, Address};
 
+#[derive(Deserialize, Serialize)]
 pub struct CreateCustomerRequest {
     name: Name,
     postal: Postal,

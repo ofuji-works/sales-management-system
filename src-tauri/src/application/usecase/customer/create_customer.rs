@@ -35,13 +35,18 @@ impl From<CreateCustomerResult> for CreateCustomerOutput {
         Self { customer_id: result.customer_id() }
     }
 }
+impl CreateCustomerOutput {
+    pub fn customer_id(&self) -> i64 {
+        self.customer_id
+    }
+}
 
 
 pub struct CreateCustomerUsecase {
     repository: Rc<dyn CustomerAbstructRepository>
 }
-impl From<Rc<dyn CustomerAbstructRepository>> for CreateCustomerUsecase {
-    fn from(repository: Rc<dyn CustomerAbstructRepository>) -> Self {
+impl CreateCustomerUsecase {
+    pub fn new (repository:  Rc<dyn CustomerAbstructRepository>) -> Self {
         Self { repository }
     }
 }
